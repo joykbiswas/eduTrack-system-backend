@@ -1,22 +1,33 @@
+// ============================================================
+// STUDENT MODEL - Learner Profile & Enrollment Management
+// ============================================================
+
 model Student {
     id String @id @default(uuid(7))
 
+    // Basic Info
     name          String
     email         String    @unique
     profilePhoto  String?
     contactNumber String?
     address       String?
-    isDeleted     Boolean   @default(false)
-    deletedAt     DateTime?
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
 
-    //relations
+    // Status & Timestamps
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
 
-    userId            String             @unique
-    user              User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    // Foreign Keys & Relations
+    userId String @unique
+    user   User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    
+    // Educational Relations
+    enrolledClasses StudentClass[]
+    assignedTasks   StudentTask[]
+    progress        StudentProgress[]
 
-    @@index([email], name: "idx_Student_email")
-    @@index([isDeleted], name: "idx_Student_isDeleted")
-    @@map("Student")
+    @@index([email], name: "idx_student_email")
+    @@index([isDeleted], name: "idx_student_isDeleted")
+    @@map("students")
 }

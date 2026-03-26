@@ -1,5 +1,5 @@
 import status from "http-status";
-import { UserStatus } from "../../../generated/prisma/enums";
+import { UserStatus, Role } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
@@ -8,15 +8,18 @@ import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { jwtUtils } from "../../utils/jwt";
 import { envVars } from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
-import { IChangePasswordPayload } from "./auth.interface";
 
-interface IRegisterPatientPayload {
+// ==================== STUDENT REGISTRATION ====================
+interface IRegisterStudentPayload {
     name: string;
     email: string;
     password: string;
+    profilePhoto?: string;
+    contactNumber?: string;
+    address?: string;
 }
 
-const registerPatient = async (payload: IRegisterPatientPayload) => {
+const registerStudent = async (payload: IRegisterStudentPayload) => {
     const { name, email, password } = payload;
 
     const data = await auth.api.signUpEmail({
@@ -24,30 +27,29 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
             name,
             email,
             password,
-            //default values
-            // needsPasswordChange: false,
-            // role: Role.PATIENT
+            role: Role.STUDENT,
         }
-    })
+    });
 
     if (!data.user) {
-        throw new AppError(status.BAD_REQUEST, "Failed to register patient");
+        throw new AppError(status.BAD_REQUEST, "Failed to register student");
     }
 
-    //TODO : Create Patient Profile In Transaction After Sign Up Of Patient In USer Model
     try {
-        const patient = await prisma.$transaction(async (tx) => {
-
-            const patientTx = await tx.patient.create({
+        const student = await prisma.$transaction(async (tx) => {
+            const studentTx = await tx.student.create({
                 data: {
                     userId: data.user.id,
                     name: payload.name,
                     email: payload.email,
+                    profilePhoto: payload.profilePhoto,
+                    contactNumber: payload.contactNumber,
+                    address: payload.address,
                 }
-            })
+            });
 
-            return patientTx
-        })
+            return studentTx;
+        });
 
         const accessToken = tokenUtils.getAccessToken({
             userId: data.user.id,
@@ -73,8 +75,8 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
             ...data,
             accessToken,
             refreshToken,
-            patient
-        }
+            student
+        };
 
     } catch (error) {
         console.log("Transaction error : ", error);
@@ -82,13 +84,104 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
             where: {
                 id: data.user.id
             }
-        })
+        });
         throw error;
     }
+};
 
+// ==================== TEACHER REGISTRATION ====================
+interface IRegisterTeacherPayload {
+    name: string;
+    email: string;
+    password: string;
+    profilePhoto?: string;
+    contactNumber?: string;
+    address?: string;
+    registrationNumber: string;
+    experience?: number;
+    gender: "MALE" | "FEMALE" | "OTHER";
+    qualification: string;
+    currentWorkingPlace?: string;
+    designation: string;
 }
 
+const registerTeacher = async (payload: IRegisterTeacherPayload) => {
+    const { name, email, password } = payload;
 
+    const data = await auth.api.signUpEmail({
+        body: {
+            name,
+            email,
+            password,
+            role: Role.TEACHER,
+        }
+    });
+
+    if (!data.user) {
+        throw new AppError(status.BAD_REQUEST, "Failed to register teacher");
+    }
+
+    try {
+        const teacher = await prisma.$transaction(async (tx) => {
+            const teacherTx = await tx.teacher.create({
+                data: {
+                    userId: data.user.id,
+                    name: payload.name,
+                    email: payload.email,
+                    profilePhoto: payload.profilePhoto,
+                    contactNumber: payload.contactNumber,
+                    address: payload.address,
+                    registrationNumber: payload.registrationNumber,
+                    experience: payload.experience || 0,
+                    gender: payload.gender,
+                    qualification: payload.qualification,
+                    currentWorkingPlace: payload.currentWorkingPlace,
+                    designation: payload.designation,
+                }
+            });
+
+            return teacherTx;
+        });
+
+        const accessToken = tokenUtils.getAccessToken({
+            userId: data.user.id,
+            role: data.user.role,
+            name: data.user.name,
+            email: data.user.email,
+            status: data.user.status,
+            isDeleted: data.user.isDeleted,
+            emailVerified: data.user.emailVerified,
+        });
+
+        const refreshToken = tokenUtils.getRefreshToken({
+            userId: data.user.id,
+            role: data.user.role,
+            name: data.user.name,
+            email: data.user.email,
+            status: data.user.status,
+            isDeleted: data.user.isDeleted,
+            emailVerified: data.user.emailVerified,
+        });
+
+        return {
+            ...data,
+            accessToken,
+            refreshToken,
+            teacher
+        };
+
+    } catch (error) {
+        console.log("Transaction error : ", error);
+        await prisma.user.delete({
+            where: {
+                id: data.user.id
+            }
+        });
+        throw error;
+    }
+};
+
+// ==================== USER LOGIN ====================
 interface ILoginUserPayload {
     email: string;
     password: string;
@@ -117,25 +210,24 @@ const loginUser = async (payload: ILoginUserPayload) => {
                 type: "email-verification"
             }
         });
-        
-       
     }
+
     const data = await auth.api.signInEmail({
         body: {
             email,
             password,
         }
-    })
+    });
 
     if (data.user.status === UserStatus.BLOCKED) {
-        throw new AppError(status.FORBIDDEN,"User is blocked");
+        throw new AppError(status.FORBIDDEN, "User is blocked");
     }
 
     if (data.user.isDeleted || data.user.status === UserStatus.DELETED) {
-        throw new AppError(status.NOT_FOUND,"User is deleted");
+        throw new AppError(status.NOT_FOUND, "User is deleted");
     }
 
-     const accessToken = tokenUtils.getAccessToken({
+    const accessToken = tokenUtils.getAccessToken({
         userId: data.user.id,
         role: data.user.role,
         name: data.user.name,
@@ -160,64 +252,56 @@ const loginUser = async (payload: ILoginUserPayload) => {
         accessToken,
         refreshToken,
     };
+};
 
-}
-
-
-const getMe = async (user : IRequestUser) => {
+// ==================== GET CURRENT USER ====================
+const getMe = async (user: IRequestUser) => {
     const isUserExists = await prisma.user.findUnique({
-        where : {
-            id : user.userId,
+        where: {
+            id: user.userId,
         },
-        include : {
-            patient : {
-                include : {
-                    appointments : true,
-                    reviews : true,
-                    prescriptions : true,
-                    medicalReports : true,
-                    patientHealthData : true,
+        include: {
+            student: {
+                include: {
+                    enrolledClasses: true,
+                    assignedTasks: true,
+                    progress: true,
                 }
             },
-            doctor : {
-                include : {
-                    specialties : true,
-                    appointments : true,
-                    reviews : true,
-                    prescriptions : true,
+            teacher: {
+                include: {
+                    assignedClasses: true,
                 }
             },
-            admin : true,
+            admin: true,
         }
-    })
+    });
 
     if (!isUserExists) {
         throw new AppError(status.NOT_FOUND, "User not found");
     }
 
     return isUserExists;
-}
+};
 
-
-const getNewToken = async (refreshToken : string, sessionToken : string) => {
-
+// ==================== REFRESH TOKEN ====================
+const getNewToken = async (refreshToken: string, sessionToken: string) => {
     const isSessionTokenExists = await prisma.session.findUnique({
-        where : {
-            token : sessionToken,
+        where: {
+            token: sessionToken,
         },
-        include : {
-            user : true,
+        include: {
+            user: true,
         }
-    })
+    });
 
-    if(!isSessionTokenExists){
+    if (!isSessionTokenExists) {
         throw new AppError(status.UNAUTHORIZED, "Invalid session token");
     }
 
-    const verifiedRefreshToken = jwtUtils.verifyToken(refreshToken, envVars.REFRESH_TOKEN_SECRET)
+    const verifiedRefreshToken = jwtUtils.verifyToken(refreshToken, envVars.REFRESH_TOKEN_SECRET);
 
-
-    if(!verifiedRefreshToken.success && verifiedRefreshToken.error){
+    if (!verifiedRefreshToken.success && verifiedRefreshToken.error) {
         throw new AppError(status.UNAUTHORIZED, "Invalid refresh token");
     }
 
@@ -243,50 +327,55 @@ const getNewToken = async (refreshToken : string, sessionToken : string) => {
         emailVerified: data.emailVerified,
     });
 
-    const {token} = await prisma.session.update({
-        where : {
-            token : sessionToken
+    const { token } = await prisma.session.update({
+        where: {
+            token: sessionToken
         },
-        data : {
-            token : sessionToken,
+        data: {
+            token: sessionToken,
             expiresAt: new Date(Date.now() + 60 * 60 * 60 * 24 * 1000),
             updatedAt: new Date(),
         }
-    })
+    });
 
     return {
-        accessToken : newAccessToken,
-        refreshToken : newRefreshToken,
-        sessionToken : token,
-    }
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        sessionToken: token,
+    };
+};
 
+// ==================== CHANGE PASSWORD ====================
+interface IChangePasswordPayload {
+    currentPassword: string;
+    newPassword: string;
 }
 
-const changePassword = async (payload : IChangePasswordPayload, sessionToken : string) =>{
+const changePassword = async (payload: IChangePasswordPayload, sessionToken: string) => {
     const session = await auth.api.getSession({
-        headers : new Headers({
-            Authorization : `Bearer ${sessionToken}`
+        headers: new Headers({
+            Authorization: `Bearer ${sessionToken}`
         })
-    })
+    });
 
-    if(!session){
+    if (!session) {
         throw new AppError(status.UNAUTHORIZED, "Invalid session token");
     }
 
-    const {currentPassword, newPassword} = payload;
+    const { currentPassword, newPassword } = payload;
 
     const result = await auth.api.changePassword({
-        body :{
+        body: {
             currentPassword,
             newPassword,
             revokeOtherSessions: true,
         },
-        headers : new Headers({
-            Authorization : `Bearer ${sessionToken}`
+        headers: new Headers({
+            Authorization: `Bearer ${sessionToken}`
         })
-    })
+    });
 
-    if(session.user.needPasswordChange){
+    if (session.user.needPasswordChange) {
         await prisma.user.update({
             where: {
                 id: session.user.id,
@@ -294,7 +383,7 @@ const changePassword = async (payload : IChangePasswordPayload, sessionToken : s
             data: {
                 needPasswordChange: false,
             }
-        })
+        });
     }
 
     const accessToken = tokenUtils.getAccessToken({
@@ -316,79 +405,80 @@ const changePassword = async (payload : IChangePasswordPayload, sessionToken : s
         isDeleted: session.user.isDeleted,
         emailVerified: session.user.emailVerified,
     });
-    
 
     return {
         ...result,
         accessToken,
         refreshToken,
-    }
-}
+    };
+};
 
-const logoutUser = async (sessionToken : string) => {
+// ==================== LOGOUT ====================
+const logoutUser = async (sessionToken: string) => {
     const result = await auth.api.signOut({
-        headers : new Headers({
-            Authorization : `Bearer ${sessionToken}`
+        headers: new Headers({
+            Authorization: `Bearer ${sessionToken}`
         })
-    })
+    });
 
     return result;
-}
+};
 
-
-const verifyEmail = async (email : string, otp : string) => {
-
+// ==================== VERIFY EMAIL ====================
+const verifyEmail = async (email: string, otp: string) => {
     const result = await auth.api.verifyEmailOTP({
-        body:{
+        body: {
             email,
             otp,
         }
-    })
+    });
 
-    if(result.status && !result.user.emailVerified){
+    if (result.status && !result.user.emailVerified) {
         await prisma.user.update({
-            where : {
+            where: {
                 email,
             },
-            data : {
+            data: {
                 emailVerified: true,
             }
-        })
+        });
     }
-}
+};
 
-const forgetPassword = async (email : string) => {
-    const isUserExist = await prisma.user.findUnique({
-        where : {
-            email,
-        }
-    })
-
-    if(!isUserExist){
-        throw new AppError(status.NOT_FOUND, "User not found");
-    }
-
-    if(!isUserExist.emailVerified){
-        throw new AppError(status.BAD_REQUEST, "Email not verified");
-    }
-
-    if(isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED){
-        throw new AppError(status.NOT_FOUND, "User not found"); 
-    }
-
-    await auth.api.requestPasswordResetEmailOTP({
-        body:{
-            email,
-        }
-    })
-}
-
-const resetPassword = async (email : string, otp : string, newPassword : string) => {
+// ==================== FORGET PASSWORD ====================
+const forgetPassword = async (email: string) => {
     const isUserExist = await prisma.user.findUnique({
         where: {
             email,
         }
-    })
+    });
+
+    if (!isUserExist) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    if (!isUserExist.emailVerified) {
+        throw new AppError(status.BAD_REQUEST, "Email not verified");
+    }
+
+    if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    await auth.api.requestPasswordResetEmailOTP({
+        body: {
+            email,
+        }
+    });
+};
+
+// ==================== RESET PASSWORD ====================
+const resetPassword = async (email: string, otp: string, newPassword: string) => {
+    const isUserExist = await prisma.user.findUnique({
+        where: {
+            email,
+        }
+    });
 
     if (!isUserExist) {
         throw new AppError(status.NOT_FOUND, "User not found");
@@ -403,12 +493,12 @@ const resetPassword = async (email : string, otp : string, newPassword : string)
     }
 
     await auth.api.resetPasswordEmailOTP({
-        body:{
+        body: {
             email,
             otp,
-            password : newPassword,
+            password: newPassword,
         }
-    })
+    });
 
     if (isUserExist.needPasswordChange) {
         await prisma.user.update({
@@ -418,55 +508,67 @@ const resetPassword = async (email : string, otp : string, newPassword : string)
             data: {
                 needPasswordChange: false,
             }
-        })
+        });
     }
 
     await prisma.session.deleteMany({
-        where:{
-            userId : isUserExist.id,
+        where: {
+            userId: isUserExist.id,
         }
-    })
-}
+    });
+};
 
+// ==================== GOOGLE LOGIN SUCCESS ====================
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const googleLoginSuccess = async (session : Record<string, any>) =>{
-    const isPatientExists = await prisma.patient.findUnique({
-        where : {
-            userId : session.user.id,
+const googleLoginSuccess = async (session: Record<string, any>) => {
+    // Check if user already has a student profile
+    const isStudentExists = await prisma.student.findUnique({
+        where: {
+            userId: session.user.id,
         }
-    })
+    });
 
-    if(!isPatientExists){
-        await prisma.patient.create({
-            data : {
-                userId : session.user.id,
-                name : session.user.name,
-                email : session.user.email,
+    // If not, create a student profile for Google OAuth users
+    if (!isStudentExists) {
+        await prisma.student.create({
+            data: {
+                userId: session.user.id,
+                name: session.user.name,
+                email: session.user.email,
             }
-        
-        })
+        });
     }
 
     const accessToken = tokenUtils.getAccessToken({
         userId: session.user.id,
         role: session.user.role,
         name: session.user.name,
+        email: session.user.email,
+        status: session.user.status,
+        isDeleted: session.user.isDeleted,
+        emailVerified: session.user.emailVerified,
     });
 
     const refreshToken = tokenUtils.getRefreshToken({
         userId: session.user.id,
         role: session.user.role,
         name: session.user.name,
+        email: session.user.email,
+        status: session.user.status,
+        isDeleted: session.user.isDeleted,
+        emailVerified: session.user.emailVerified,
     });
 
     return {
         accessToken,
         refreshToken,
-    }
-}
+    };
+};
 
+// ==================== EXPORT ====================
 export const AuthService = {
-    registerPatient,
+    registerStudent,
+    registerTeacher,
     loginUser,
     getMe,
     getNewToken,
@@ -475,6 +577,5 @@ export const AuthService = {
     verifyEmail,
     forgetPassword,
     resetPassword,
-    googleLoginSuccess
-
+    googleLoginSuccess,
 };

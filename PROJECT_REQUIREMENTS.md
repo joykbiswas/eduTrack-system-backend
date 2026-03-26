@@ -2,13 +2,13 @@
 
 ## 1. Project Overview
 
-**Project Name:** ELODI (Eldi)  
+**Project Name:** eduTrack System  
 **Author:** Edict Digital  
 **Type:** Educational Management Platform  
 **Version:** 1.0.6
 
 ### Core Purpose
-ELODI is an educational platform for interactive learning through:
+EduTrack is an educational platform for interactive learning through:
 - **Word Story Cards** - Interactive learning content with text, audio, and quizzes
 - **Messaging** - Teacher-student communication (including audio)
 - **Assessments & Quizzes** - Multiple question types

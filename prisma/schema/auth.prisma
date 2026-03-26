@@ -1,9 +1,14 @@
+// ============================================================
+// BETTER-AUTH CORE MODELS
+// Authentication & User Management with role-based access control
+// ============================================================
+
 model User {
     id                 String     @id
     name               String
     email              String
     emailVerified      Boolean    @default(false)
-    role               Role       @default(PATIENT)
+    role               Role       @default(STUDENT)
     status             UserStatus @default(ACTIVE)
     needPasswordChange Boolean    @default(false)
     isDeleted          Boolean    @default(false)
@@ -11,16 +16,28 @@ model User {
     image              String?
     createdAt          DateTime   @default(now())
     updatedAt          DateTime   @updatedAt
+
+    // Better-Auth Relations
     sessions           Session[]
     accounts           Account[]
+
+    // Role-Based Relations (1:1 with each role)
     student            Student?
     teacher            Teacher?
     admin              Admin?
 
-    @@unique([email])
-    @@map("user")
+    // Communication Relations
+    sentMessages       Message[]  @relation("Sender")
+    receivedMessages   Message[]  @relation("Receiver")
+
+    @@unique([email], name: "idx_user_email_unique")
+    @@index([role], name: "idx_user_role")
+    @@index([status], name: "idx_user_status")
+    @@index([isDeleted], name: "idx_user_isDeleted")
+    @@map("users")
 }
 
+// ============ SESSION MANAGEMENT ============
 model Session {
     id        String   @id
     expiresAt DateTime
@@ -32,11 +49,13 @@ model Session {
     userId    String
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([token])
-    @@index([userId])
-    @@map("session")
+    @@unique([token], name: "idx_session_token_unique")
+    @@index([userId], name: "idx_session_userId")
+    @@index([expiresAt], name: "idx_session_expiresAt")
+    @@map("sessions")
 }
 
+// ============ OAUTH & CREDENTIALS ============
 model Account {
     id                    String    @id
     accountId             String
@@ -49,22 +68,12 @@ model Account {
     accessTokenExpiresAt  DateTime?
     refreshTokenExpiresAt DateTime?
     scope                 String?
-    password              String?
+    password              String?   // For email/password auth
     createdAt             DateTime  @default(now())
     updatedAt             DateTime  @updatedAt
 
-    @@index([userId])
-    @@map("account")
-}
-
-model Verification {
-    id         String   @id
-    identifier String
-    value      String
-    expiresAt  DateTime
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
-
-    @@index([identifier])
-    @@map("verification")
+    @@unique([providerId, accountId], name: "idx_account_provider_unique")
+    @@index([userId], name: "idx_account_userId")
+    @@index([providerId], name: "idx_account_providerId")
+    @@map("accounts")
 }

@@ -1,9 +1,24 @@
-import z from "zod";
+import { z } from "zod";
 
-export const updateAdminZodSchema = z.object({
-    admin: z.object({
-        name: z.string("Name must be a string").optional(),
-        profilePhoto: z.url("Profile photo must be a valid URL").optional(),
-        contactNumber: z.string("Contact number must be a string").min(11, "Contact number must be at least 11 characters").max(14, "Contact number must be at most 15 characters").optional(),
-    }).optional()
-})
+export const createAdminValidationSchema = z.object({
+  body: z.object({
+    name: z.string({
+      required_error: "Name is required",
+    }).min(2, "Name must be at least 2 characters"),
+    email: z.string({
+      required_error: "Email is required",
+    }).email("Email must be valid"),
+    profilePhoto: z.string().optional(),
+    contactNumber: z.string().optional(),
+  }),
+});
+
+export const updateAdminValidationSchema = z.object({
+  body: z.object({
+    name: z.string().optional(),
+    profilePhoto: z.string().optional(),
+    contactNumber: z.string().optional(),
+  }),
+});
+
+export const updateAdminZodSchema = updateAdminValidationSchema;

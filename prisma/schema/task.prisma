@@ -1,0 +1,60 @@
+// ============================================================
+// TASK MODELS - Assignment Management & Tracking
+// ============================================================
+
+// ============ TASK ============
+model Task {
+  id          String   @id @default(uuid(7))
+  title       String
+  description String?
+  cardId      String?
+  
+  // Assignment Details
+  dueDate     DateTime?
+  status      TaskStatus @default(PENDING)
+  
+  // Class & Creator
+  classId     String?
+  class       Class?   @relation(fields: [classId], references: [id], onDelete: SetNull)
+  
+  createdBy   String?
+  
+  // Student Assignments
+  assignedTo  StudentTask[]
+  
+  // Status & Timestamps
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([classId], name: "idx_task_classId")
+  @@index([status], name: "idx_task_status")
+  @@index([dueDate], name: "idx_task_dueDate")
+  @@index([isDeleted], name: "idx_task_isDeleted")
+  @@map("tasks")
+}
+
+// ============ STUDENT-TASK JUNCTION (Many-to-Many Assignment) ============
+model StudentTask {
+  id        String   @id @default(uuid(7))
+  
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  // Task Status
+  completed Boolean  @default(false)
+  completedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, taskId], name: "idx_studenttask_unique")
+  @@index([studentId], name: "idx_studenttask_studentId")
+  @@index([taskId], name: "idx_studenttask_taskId")
+  @@index([completed], name: "idx_studenttask_completed")
+  @@map("student_tasks")
+}

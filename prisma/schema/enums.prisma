@@ -1,8 +1,8 @@
 enum Role {
   SUPER_ADMIN
   ADMIN
-  DOCTOR
-  PATIENT
+  TEACHER
+  STUDENT
 }
 
 enum UserStatus {
@@ -38,4 +38,27 @@ enum AppointmentStatus {
 enum PaymentStatus {
   PAID
   UNPAID
+}
+
+enum CardStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum QuizType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  FILL_BLANK
+  MATCHING
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ReceiverType {
+  STUDENT
+  CLASS
 }

@@ -1,0 +1,43 @@
+// ============================================================
+// MESSAGE MODEL - Communication & Notifications
+// ============================================================
+
+model Message {
+  id           String   @id @default(uuid(7))
+  
+  // Message Content
+  title        String
+  content      String?
+  audioUrl     String?
+  
+  // Sender
+  senderId     String
+  sender       User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  // Recipients (can be individual student or entire class)
+  receiverId   String?
+  receiver     User?    @relation("Receiver", fields: [receiverId], references: [id], onDelete: SetNull)
+  
+  classId      String?
+  class        Class?   @relation(fields: [classId], references: [id], onDelete: SetNull)
+  
+  receiverType ReceiverType @default(STUDENT)
+  
+  // Status
+  isRead       Boolean  @default(false)
+  readAt       DateTime?
+  
+  // Status & Timestamps
+  isDeleted    Boolean  @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([senderId], name: "idx_message_senderId")
+  @@index([receiverId], name: "idx_message_receiverId")
+  @@index([classId], name: "idx_message_classId")
+  @@index([receiverType], name: "idx_message_receiverType")
+  @@index([isRead], name: "idx_message_isRead")
+  @@index([isDeleted], name: "idx_message_isDeleted")
+  @@map("messages")
+}

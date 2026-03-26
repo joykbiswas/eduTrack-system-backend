@@ -1,0 +1,83 @@
+// ============================================================
+// ORGANIZATION & CLASS MODELS - Institutional Structure
+// ============================================================
+
+// ============ ORGANIZATION HIERARCHY ============
+model Organization {
+  id          String   @id @default(uuid(7))
+  name        String
+  description String?
+  
+  // Hierarchical Structure (parent-child relationships)
+  parentId    String?
+  parent      Organization? @relation("OrgHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Organization[] @relation("OrgHierarchy")
+
+  // Relations to other entities
+  classes     Class[]
+  lookups     Lookup[]
+
+  // Status & Timestamps
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([parentId], name: "idx_organization_parentId")
+  @@index([isDeleted], name: "idx_organization_isDeleted")
+  @@map("organizations")
+}
+
+// ============ CLASS / SECTION ============
+model Class {
+  id             String   @id @default(uuid(7))
+  name           String
+  description    String?
+  classNumber    Int?
+  sectionCode    String?
+  academicYear   String?
+
+  // Organization & Teacher
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  teacherId      String?
+  teacher        Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  // Relations to students, tasks, and messages
+  students       StudentClass[]
+  tasks          Task[]
+  messages       Message[]
+
+  // Status & Timestamps
+  isDeleted      Boolean  @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, name, academicYear], name: "idx_class_unique")
+  @@index([organizationId], name: "idx_class_organizationId")
+  @@index([teacherId], name: "idx_class_teacherId")
+  @@index([isDeleted], name: "idx_class_isDeleted")
+  @@map("classes")
+}
+
+// ============ STUDENT-CLASS JUNCTION (Many-to-Many) ============
+model StudentClass {
+  id        String   @id @default(uuid(7))
+  
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  // Enrollment tracking
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, classId], name: "idx_studentclass_unique")
+  @@index([studentId], name: "idx_studentclass_studentId")
+  @@index([classId], name: "idx_studentclass_classId")
+  @@map("student_classes")
+}

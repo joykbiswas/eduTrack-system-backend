@@ -1,7 +1,12 @@
+export interface ICreateAdminPayload {
+  name: string;
+  email: string;
+  profilePhoto?: string;
+  contactNumber?: string;
+}
+
 export interface IUpdateAdminPayload {
-    admin?: {
-        name?: string;
-        profilePhoto?: string;
-        contactNumber?: string;
-    }
+  name?: string;
+  profilePhoto?: string;
+  contactNumber?: string;
 }

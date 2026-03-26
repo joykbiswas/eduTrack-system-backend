@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import ms, { StringValue } from "ms";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { tokenUtils } from "../../utils/token";
@@ -10,17 +9,14 @@ import AppError from "../../errorHelpers/AppError";
 import { CookieUtils } from "../../utils/cookie";
 import { auth } from "../../lib/auth";
 
-const registerPatient = catchAsync(
+// ==================== REGISTER STUDENT ====================
+const registerStudent = catchAsync(
     async (req: Request, res: Response) => {
-        const maxAge = ms(envVars.ACCESS_TOKEN_EXPIRES_IN as StringValue);
-        console.log({ maxAge });
         const payload = req.body;
 
-        console.log(payload);
+        const result = await AuthService.registerStudent(payload);
 
-        const result = await AuthService.registerPatient(payload);
-
-        const { accessToken, refreshToken, token, ...rest } = result
+        const { accessToken, refreshToken, token, ...rest } = result;
 
         tokenUtils.setAccessTokenCookie(res, accessToken);
         tokenUtils.setRefreshTokenCookie(res, refreshToken);
@@ -29,22 +25,50 @@ const registerPatient = catchAsync(
         sendResponse(res, {
             httpStatusCode: status.CREATED,
             success: true,
-            message: "Patient registered successfully",
+            message: "Student registered successfully",
             data: {
                 token,
                 accessToken,
                 refreshToken,
                 ...rest,
             }
-        })
+        });
     }
-)
+);
 
+// ==================== REGISTER TEACHER ====================
+const registerTeacher = catchAsync(
+    async (req: Request, res: Response) => {
+        const payload = req.body;
+
+        const result = await AuthService.registerTeacher(payload);
+
+        const { accessToken, refreshToken, token, ...rest } = result;
+
+        tokenUtils.setAccessTokenCookie(res, accessToken);
+        tokenUtils.setRefreshTokenCookie(res, refreshToken);
+        tokenUtils.setBetterAuthSessionCookie(res, token as string);
+
+        sendResponse(res, {
+            httpStatusCode: status.CREATED,
+            success: true,
+            message: "Teacher registered successfully",
+            data: {
+                token,
+                accessToken,
+                refreshToken,
+                ...rest,
+            }
+        });
+    }
+);
+
+// ==================== LOGIN USER ====================
 const loginUser = catchAsync(
     async (req: Request, res: Response) => {
         const payload = req.body;
         const result = await AuthService.loginUser(payload);
-        const { accessToken, refreshToken, token, ...rest } = result
+        const { accessToken, refreshToken, token, ...rest } = result;
 
         tokenUtils.setAccessTokenCookie(res, accessToken);
         tokenUtils.setRefreshTokenCookie(res, refreshToken);
@@ -59,26 +83,26 @@ const loginUser = catchAsync(
                 accessToken,
                 refreshToken,
                 ...rest,
-
             },
-        })
+        });
     }
-)
+);
 
+// ==================== GET CURRENT USER ====================
 const getMe = catchAsync(
     async (req: Request, res: Response) => {
         const user = req.user;
-        console.log({user});
         const result = await AuthService.getMe(user);
         sendResponse(res, {
             httpStatusCode: status.OK,
             success: true,
             message: "User profile fetched successfully",
             data: result,
-        })
+        });
     }
-)
+);
 
+// ==================== REFRESH TOKEN ====================
 const getNewToken = catchAsync(
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies.refreshToken;
@@ -105,8 +129,9 @@ const getNewToken = catchAsync(
             },
         });
     }
-)
+);
 
+// ==================== CHANGE PASSWORD ====================
 const changePassword = catchAsync(
     async (req: Request, res: Response) => {
         const payload = req.body;
@@ -127,8 +152,9 @@ const changePassword = catchAsync(
             data: result,
         });
     }
-)
+);
 
+// ==================== LOGOUT ====================
 const logoutUser = catchAsync(
     async (req: Request, res: Response) => {
         const betterAuthSessionToken = req.cookies["better-auth.session_token"];
@@ -156,8 +182,9 @@ const logoutUser = catchAsync(
             data: result,
         });
     }
-)
+);
 
+// ==================== VERIFY EMAIL ====================
 const verifyEmail = catchAsync(
     async (req: Request, res: Response) => {
         const { email, otp } = req.body;
@@ -169,8 +196,9 @@ const verifyEmail = catchAsync(
             message: "Email verified successfully",
         });
     }
-)
+);
 
+// ==================== FORGET PASSWORD ====================
 const forgetPassword = catchAsync(
     async (req: Request, res: Response) => {
         const { email } = req.body;
@@ -182,8 +210,9 @@ const forgetPassword = catchAsync(
             message: "Password reset OTP sent to email successfully",
         });
     }
-)
+);
 
+// ==================== RESET PASSWORD ====================
 const resetPassword = catchAsync(
     async (req: Request, res: Response) => {
         const { email, otp, newPassword } = req.body;
@@ -195,8 +224,9 @@ const resetPassword = catchAsync(
             message: "Password reset successfully",
         });
     }
-)
+);
 
+// ==================== GOOGLE LOGIN ====================
 // /api/v1/auth/login/google?redirect=/profile
 const googleLogin = catchAsync((req: Request, res: Response) => {
     const redirectPath = req.query.redirect || "/dashboard";
@@ -206,55 +236,56 @@ const googleLogin = catchAsync((req: Request, res: Response) => {
     const callbackURL = `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success?redirect=${encodedRedirectPath}`;
 
     res.render("googleRedirect", {
-        callbackURL : callbackURL,
-        betterAuthUrl : envVars.BETTER_AUTH_URL,
-    })
-})
+        callbackURL: callbackURL,
+        betterAuthUrl: envVars.BETTER_AUTH_URL,
+    });
+});
 
 const googleLoginSuccess = catchAsync(async (req: Request, res: Response) => {
     const redirectPath = req.query.redirect as string || "/dashboard";
 
     const sessionToken = req.cookies["better-auth.session_token"];
 
-    if(!sessionToken){
+    if (!sessionToken) {
         return res.redirect(`${envVars.FRONTEND_URL}/login?error=oauth_failed`);
     }
 
     const session = await auth.api.getSession({
-        headers:{
-            "Cookie" : `better-auth.session_token=${sessionToken}`
+        headers: {
+            "Cookie": `better-auth.session_token=${sessionToken}`
         }
-    })
+    });
 
     if (!session) {
         return res.redirect(`${envVars.FRONTEND_URL}/login?error=no_session_found`);
     }
 
-
-    if(session && !session.user){
+    if (session && !session.user) {
         return res.redirect(`${envVars.FRONTEND_URL}/login?error=no_user_found`);
     }
 
     const result = await AuthService.googleLoginSuccess(session);
 
-    const {accessToken, refreshToken} = result;
+    const { accessToken, refreshToken } = result;
 
     tokenUtils.setAccessTokenCookie(res, accessToken);
     tokenUtils.setRefreshTokenCookie(res, refreshToken);
- // ?redirect=//profile -> /profile
+
     const isValidRedirectPath = redirectPath.startsWith("/") && !redirectPath.startsWith("//");
     const finalRedirectPath = isValidRedirectPath ? redirectPath : "/dashboard";
 
     res.redirect(`${envVars.FRONTEND_URL}${finalRedirectPath}`);
-})
+});
 
 const handleOAuthError = catchAsync((req: Request, res: Response) => {
     const error = req.query.error as string || "oauth_failed";
     res.redirect(`${envVars.FRONTEND_URL}/login?error=${error}`);
-})
+});
 
+// ==================== EXPORT ====================
 export const AuthController = {
-    registerPatient,
+    registerStudent,
+    registerTeacher,
     loginUser,
     getMe,
     getNewToken,
@@ -266,5 +297,4 @@ export const AuthController = {
     googleLogin,
     googleLoginSuccess,
     handleOAuthError,
-
 };

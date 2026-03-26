@@ -1,0 +1,146 @@
+// ============================================================
+// EDUCATION CONTENT MODELS - Learning Materials & Progress
+// ============================================================
+
+// ============ WORD STORY CARD ============
+model WordStoryCard {
+  id               String   @id @default(uuid(7))
+  title            String
+  keywords         String?
+  description      String?
+  descriptionSound String?
+  dialogTitle      String?
+  dialogContent    Json?
+  status           CardStatus @default(DRAFT)
+  
+  // Related Content
+  cardContents     CardContent[]
+  quizzes          Quiz[]
+  materials        Material[]
+
+  // Status & Timestamps
+  isDeleted        Boolean  @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status], name: "idx_wordstorycard_status")
+  @@index([isDeleted], name: "idx_wordstorycard_isDeleted")
+  @@map("word_story_cards")
+}
+
+// ============ CARD CONTENT (Positioning) ============
+model CardContent {
+  id        String   @id @default(uuid(7))
+  
+  cardId    String
+  card      WordStoryCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  imageUrl  String?
+  soundUrl  String?
+  xPosition Int      @default(0)
+  yPosition Int      @default(0)
+  width     Int      @default(100)
+  height    Int      @default(100)
+  seq       Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cardId], name: "idx_cardcontent_cardId")
+  @@map("card_contents")
+}
+
+// ============ QUIZ ============
+model Quiz {
+  id               String   @id @default(uuid(7))
+  
+  cardId           String
+  card             WordStoryCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  type             QuizType
+  question         String
+  options          Json?
+  correctAnswer    Json
+  points           Int     @default(1)
+  
+  // Student Progress Tracking
+  studentProgress  StudentProgress[]
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([cardId], name: "idx_quiz_cardId")
+  @@map("quizzes")
+}
+
+// ============ MATERIAL / LEARNING CONTENT ============
+model Material {
+  id        String   @id @default(uuid(7))
+  title     String
+  content   String
+  type      String?
+  
+  cardId    String?
+  card      WordStoryCard? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  
+  // Status & Timestamps
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cardId], name: "idx_material_cardId")
+  @@index([isDeleted], name: "idx_material_isDeleted")
+  @@map("materials")
+}
+
+// ============ ASSESSMENT / TEST ============
+model Assessment {
+  id           String   @id @default(uuid(7))
+  title        String
+  description  String?
+  
+  cardId       String?
+  questions    Json
+  passingScore Int      @default(60)
+  
+  // Status & Timestamps
+  isDeleted    Boolean  @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([cardId], name: "idx_assessment_cardId")
+  @@index([isDeleted], name: "idx_assessment_isDeleted")
+  @@map("assessments")
+}
+
+// ============ STUDENT PROGRESS TRACKING ============
+model StudentProgress {
+  id            String   @id @default(uuid(7))
+  
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  cardId        String?
+  
+  quizId        String?
+  quiz          Quiz?    @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  
+  // Progress Status
+  score         Int?
+  completed     Boolean  @default(false)
+  isRead        Boolean  @default(false)
+  isListened    Boolean  @default(false)
+  hasQuiz       Boolean  @default(false)
+  hasAssignment Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([studentId], name: "idx_studentprogress_studentId")
+  @@index([cardId], name: "idx_studentprogress_cardId")
+  @@index([quizId], name: "idx_studentprogress_quizId")
+  @@map("student_progress")
+}

@@ -1,0 +1,53 @@
+// ============================================================
+// LOOKUP MODELS - Configurable Dropdowns & Enumerations
+// ============================================================
+
+// ============ LOOKUP (Configuration) ============
+model Lookup {
+  id             String   @id @default(uuid(7))
+  code           String   @unique
+  name           String
+  description    String?
+  
+  // Organization-specific lookups (null = global)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  
+  // Lookup Values
+  values         LookupValue[]
+  
+  // Status & Timestamps
+  isDeleted      Boolean  @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([code], name: "idx_lookup_code")
+  @@index([organizationId], name: "idx_lookup_organizationId")
+  @@index([isDeleted], name: "idx_lookup_isDeleted")
+  @@map("lookups")
+}
+
+// ============ LOOKUP VALUE (Individual Options) ============
+model LookupValue {
+  id         String   @id @default(uuid(7))
+  
+  lookupId   String
+  lookup     Lookup   @relation(fields: [lookupId], references: [id], onDelete: Cascade)
+  
+  // Value Definition
+  value      String
+  label      String
+  sortOrder  Int      @default(0)
+  
+  // Hierarchical Support
+  parentId   String?
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([lookupId, value], name: "idx_lookupvalue_unique")
+  @@index([lookupId], name: "idx_lookupvalue_lookupId")
+  @@index([sortOrder], name: "idx_lookupvalue_sortOrder")
+  @@map("lookup_values")
+}
