@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import status from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
@@ -96,23 +97,45 @@ const updateStudent = async (id: string, payload: IUpdateStudentPayload) => {
       id,
       isDeleted: false,
     },
+    include: { user: true },
   });
 
   if (!isStudentExist) {
     throw new AppError(status.NOT_FOUND, "Student not found");
   }
 
-  const updatedStudent = await prisma.student.update({
-    where: {
-      id,
-    },
-    data: {
-      ...payload,
-    },
-    include: {
-      user: true,
-      enrolledClasses: true,
-    },
+  const updatedStudent = await prisma.$transaction(async (tx) => {
+    // Update student profile
+    const studentData = await tx.student.update({
+      where: {
+        id,
+      },
+      data: {
+        ...payload,
+      },
+      include: {
+        user: true,
+        enrolledClasses: true,
+      },
+    });
+
+    // Update corresponding user record
+    const userUpdateData: any = {};
+    if (payload.name) {
+      userUpdateData.name = payload.name;
+    }
+    if (payload.profilePhoto) {
+      userUpdateData.image = payload.profilePhoto;
+    }
+
+    if (Object.keys(userUpdateData).length > 0) {
+      await tx.user.update({
+        where: { id: isStudentExist.userId },
+        data: userUpdateData,
+      });
+    }
+
+    return studentData;
   });
 
   return updatedStudent;
@@ -141,12 +164,10 @@ const enrollInClass = async (studentId: string, payload: IEnrollStudentInClassPa
     throw new AppError(status.NOT_FOUND, "Class not found");
   }
 
-  const alreadyEnrolled = await prisma.studentClass.findUnique({
+  const alreadyEnrolled = await prisma.studentClass.findFirst({
     where: {
-      studentId_classId: {
-        studentId,
-        classId: payload.classId,
-      },
+      studentId,
+      classId: payload.classId,
     },
   });
 
@@ -173,20 +194,40 @@ const deleteStudent = async (id: string) => {
     where: {
       id,
     },
+    include: {
+      user: true,
+    },
   });
 
   if (!isStudentExist) {
     throw new AppError(status.NOT_FOUND, "Student not found");
   }
 
-  const deletedStudent = await prisma.student.update({
-    where: {
-      id,
-    },
-    data: {
-      isDeleted: true,
-      deletedAt: new Date(),
-    },
+  const deletedStudent = await prisma.$transaction(async (tx) => {
+    // Soft delete student
+    const studentData = await tx.student.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+
+    // Soft delete corresponding user
+    await tx.user.update({
+      where: {
+        id: isStudentExist.userId,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        status: "DELETED",
+      },
+    });
+
+    return studentData;
   });
 
   return deletedStudent;

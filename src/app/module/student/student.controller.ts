@@ -7,7 +7,7 @@ import { ICreateStudentPayload, IEnrollStudentInClassPayload } from "./student.i
 const getAllStudents = catchAsync(async (req, res) => {
   const result = await StudentService.getAllStudents();
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Students retrieved successfully",
     data: result,
@@ -16,9 +16,9 @@ const getAllStudents = catchAsync(async (req, res) => {
 
 const getStudentById = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await StudentService.getStudentById(id);
+  const result = await StudentService.getStudentById(id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Student retrieved successfully",
     data: result,
@@ -27,11 +27,11 @@ const getStudentById = catchAsync(async (req, res) => {
 
 const createStudent = catchAsync(async (req, res) => {
   const payload: ICreateStudentPayload = req.body;
-  const userId = req.user?.id;
+  const userId = req.user?.userId;
 
   if (!userId) {
     return sendResponse(res, {
-      statusCode: status.UNAUTHORIZED,
+      httpStatusCode: status.UNAUTHORIZED,
       success: false,
       message: "User not authenticated",
     });
@@ -39,7 +39,7 @@ const createStudent = catchAsync(async (req, res) => {
 
   const result = await StudentService.createStudent(userId, payload);
   sendResponse(res, {
-    statusCode: status.CREATED,
+    httpStatusCode: status.CREATED,
     success: true,
     message: "Student created successfully",
     data: result,
@@ -50,9 +50,9 @@ const updateStudent = catchAsync(async (req, res) => {
   const { id } = req.params;
   const payload = req.body;
 
-  const result = await StudentService.updateStudent(id, payload);
+  const result = await StudentService.updateStudent(id as string, payload);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Student updated successfully",
     data: result,
@@ -63,9 +63,9 @@ const enrollInClass = catchAsync(async (req, res) => {
   const { id } = req.params;
   const payload: IEnrollStudentInClassPayload = req.body;
 
-  const result = await StudentService.enrollInClass(id, payload);
+  const result = await StudentService.enrollInClass(id as string, payload);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Student enrolled in class successfully",
     data: result,
@@ -75,9 +75,9 @@ const enrollInClass = catchAsync(async (req, res) => {
 const deleteStudent = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await StudentService.deleteStudent(id);
+  const result = await StudentService.deleteStudent(id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Student deleted successfully",
     data: result,

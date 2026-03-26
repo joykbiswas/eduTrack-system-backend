@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import status from "http-status";
 import { Role } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
@@ -210,11 +211,19 @@ const updateTeacher = async (id: string, payload: IUpdateTeacherPayload) => {
             data: payload.teacher,
         });
 
-        // If name is updated, also update user name
+        // Update corresponding user record
+        const userUpdateData: any = {};
         if (payload.teacher?.name) {
+            userUpdateData.name = payload.teacher.name;
+        }
+        if (payload.teacher?.profilePhoto) {
+            userUpdateData.image = payload.teacher.profilePhoto;
+        }
+
+        if (Object.keys(userUpdateData).length > 0) {
             await tx.user.update({
                 where: { id: teacher.userId },
-                data: { name: payload.teacher.name },
+                data: userUpdateData,
             });
         }
 
@@ -249,7 +258,15 @@ const deleteTeacher = async (id: string) => {
             }
         });
 
-        // Note: User is not deleted when teacher is deleted
+        // Soft delete corresponding user
+        await tx.user.update({
+            where: { id: teacher.userId },
+            data: {
+                isDeleted: true,
+                deletedAt: new Date(),
+                status: "DELETED",
+            }
+        });
     });
 
     return { message: "Teacher deleted successfully" };

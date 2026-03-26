@@ -1,37 +1,13 @@
-import { Gender } from "../../../generated/prisma/enums";
+import { Role, UserStatus } from "../../../generated/prisma/enums";
 
-// Teacher registration payload
-export interface ICreateTeacherPayload {
-    password: string;
-    teacher: {
-        name: string;
-        email: string;
-        profilePhoto?: string;
-        contactNumber?: string;
-        address?: string;
-        registrationNumber: string;
-        experience?: number;
-        gender: Gender;
-        qualification: string;
-        currentWorkingPlace?: string;
-        designation: string;
-    }
-}
-
-// Update teacher payload
-export interface IUpdateTeacherPayload {
-    teacher: {
-        name?: string;
-        profilePhoto?: string;
-        contactNumber?: string;
-        address?: string;
-        registrationNumber?: string;
-        experience?: number;
-        gender?: Gender;
-        qualification?: string;
-        currentWorkingPlace?: string;
-        designation?: string;
-    }
+// Update user payload
+export interface IUpdateUserPayload {
+    name?: string;
+    email?: string;
+    role?: Role;
+    status?: UserStatus;
+    image?: string;
+    needPasswordChange?: boolean;
 }
 
 // Pagination options
@@ -42,12 +18,11 @@ export interface IPaginationOptions {
     sortOrder?: "asc" | "desc";
 }
 
-// Filters
-export interface ITeacherFilters {
+// User filters
+export interface IUserFilters {
     searchTerm?: string;
     name?: string;
     email?: string;
-    gender?: Gender;
-    designation?: string;
-    qualification?: string;
+    role?: Role;
+    status?: UserStatus;
 }

@@ -7,14 +7,6 @@ import { validateRequest } from "../../middleware/validateRequest";
 
 const router = Router();
 
-// Create Teacher (Admin only)
-router.post(
-    "/create-teacher",
-    // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-    validateRequest(createTeacherZodSchema),
-    UserController.createTeacher
-);
-
 // Get All Teachers (Admin only)
 router.get(
     "/",
