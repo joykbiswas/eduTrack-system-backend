@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { validateRequest } from "../../middleware/validateRequest";
+import { validateRequest, } from "../../middleware/validateRequest";
 import { TeacherController } from "./teacher.controller";
-import { createTeacherZodSchema, updateTeacherZodSchema } from "./teacher.validation";
+import { createTeacherZodSchema, updateTeacherZodSchema,  } from "./teacher.validation";
 // import { Role } from "../../../generated/prisma/enums";
 // import { checkAuth } from "../../middleware/checkAuth";
 

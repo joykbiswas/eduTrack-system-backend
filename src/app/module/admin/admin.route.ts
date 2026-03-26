@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkAuth } from "../../middleware/checkAuth";
+// import { checkAuth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validateRequest";
 import { AdminController } from "./admin.controller";
 import { createAdminValidationSchema, updateAdminValidationSchema } from "./admin.validation";
@@ -15,7 +15,7 @@ router.get("/:id", AdminController.getAdminById);
 // Create new admin
 router.post(
   "/",
-  checkAuth,
+  // checkAuth,
   validateRequest(createAdminValidationSchema),
   AdminController.createAdmin
 );

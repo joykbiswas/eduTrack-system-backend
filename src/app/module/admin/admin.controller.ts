@@ -10,7 +10,7 @@ const getAllAdmins = catchAsync(
     const result = await AdminService.getAllAdmins();
 
     sendResponse(res, {
-      statusCode: status.OK,
+      httpStatusCode: status.OK,
       success: true,
       message: "Admins fetched successfully",
       data: result,
@@ -25,7 +25,7 @@ const getAdminById = catchAsync(
     const admin = await AdminService.getAdminById(id as string);
 
     sendResponse(res, {
-      statusCode: status.OK,
+      httpStatusCode: status.OK,
       success: true,
       message: "Admin fetched successfully",
       data: admin,
@@ -36,20 +36,11 @@ const getAdminById = catchAsync(
 const createAdmin = catchAsync(
   async (req: Request, res: Response) => {
     const payload: ICreateAdminPayload = req.body;
-    const userId = req.user?.id;
 
-    if (!userId) {
-      return sendResponse(res, {
-        statusCode: status.UNAUTHORIZED,
-        success: false,
-        message: "User not authenticated",
-      });
-    }
-
-    const result = await AdminService.createAdmin(userId, payload);
+    const result = await AdminService.createAdmin(payload);
 
     sendResponse(res, {
-      statusCode: status.CREATED,
+      httpStatusCode: status.CREATED,
       success: true,
       message: "Admin created successfully",
       data: result,
@@ -65,7 +56,7 @@ const updateAdmin = catchAsync(
     const updatedAdmin = await AdminService.updateAdmin(id as string, payload);
 
     sendResponse(res, {
-      statusCode: status.OK,
+      httpStatusCode: status.OK,
       success: true,
       message: "Admin updated successfully",
       data: updatedAdmin,
@@ -81,7 +72,7 @@ const deleteAdmin = catchAsync(
     const result = await AdminService.deleteAdmin(id as string, user);
 
     sendResponse(res, {
-      statusCode: status.OK,
+      httpStatusCode: status.OK,
       success: true,
       message: "Admin deleted successfully",
       data: result,

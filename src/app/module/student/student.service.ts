@@ -24,6 +24,7 @@ const getAllStudents = async () => {
       progress: true,
     },
   });
+
   return students;
 };
 
