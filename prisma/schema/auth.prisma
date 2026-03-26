@@ -6,7 +6,7 @@
 model User {
     id                 String     @id
     name               String
-    email              String
+    email              String     @unique
     emailVerified      Boolean    @default(false)
     role               Role       @default(STUDENT)
     status             UserStatus @default(ACTIVE)
@@ -30,7 +30,6 @@ model User {
     sentMessages       Message[]  @relation("Sender")
     receivedMessages   Message[]  @relation("Receiver")
 
-    @@unique([email], name: "idx_user_email_unique")
     @@index([role], name: "idx_user_role")
     @@index([status], name: "idx_user_status")
     @@index([isDeleted], name: "idx_user_isDeleted")

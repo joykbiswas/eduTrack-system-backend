@@ -1,9 +1,9 @@
 import { Gender } from "../../../generated/prisma/enums";
 
-
-export interface ICreateDoctorPayload {
+// Teacher registration payload
+export interface ICreateTeacherPayload {
     password: string;
-    doctor: {
+    teacher: {
         name: string;
         email: string;
         profilePhoto?: string;
@@ -12,10 +12,42 @@ export interface ICreateDoctorPayload {
         registrationNumber: string;
         experience?: number;
         gender: Gender;
-        appointmentFee: number;
         qualification: string;
-        currentWorkingPlace: string;
+        currentWorkingPlace?: string;
         designation: string;
     }
-    specialties: string[];
+}
+
+// Update teacher payload
+export interface IUpdateTeacherPayload {
+    teacher: {
+        name?: string;
+        profilePhoto?: string;
+        contactNumber?: string;
+        address?: string;
+        registrationNumber?: string;
+        experience?: number;
+        gender?: Gender;
+        qualification?: string;
+        currentWorkingPlace?: string;
+        designation?: string;
+    }
+}
+
+// Pagination options
+export interface IPaginationOptions {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+}
+
+// Filters
+export interface ITeacherFilters {
+    searchTerm?: string;
+    name?: string;
+    email?: string;
+    gender?: Gender;
+    designation?: string;
+    qualification?: string;
 }
