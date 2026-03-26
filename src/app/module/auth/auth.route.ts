@@ -7,17 +7,11 @@ import { AuthValidation } from "./auth.validation";
 
 const router = Router();
 
-// Registration Routes
+// Registration Route - handles both Student 
 router.post(
-    "/register/student",
-    validateRequest(AuthValidation.studentRegistration),
-    AuthController.registerStudent
-);
-
-router.post(
-    "/register/teacher",
-    validateRequest(AuthValidation.teacherRegistration),
-    AuthController.registerTeacher
+    "/register",
+    validateRequest(AuthValidation.registration),
+    AuthController.register
 );
 
 // Login Route
@@ -50,13 +44,6 @@ router.post(
     "/logout",
     checkAuth(Role.ADMIN, Role.TEACHER, Role.STUDENT, Role.SUPER_ADMIN),
     AuthController.logoutUser
-);
-
-// Email Verification
-router.post(
-    "/verify-email",
-    validateRequest(AuthValidation.verifyEmail),
-    AuthController.verifyEmail
 );
 
 // Password Reset

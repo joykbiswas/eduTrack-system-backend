@@ -9,12 +9,12 @@ import AppError from "../../errorHelpers/AppError";
 import { CookieUtils } from "../../utils/cookie";
 import { auth } from "../../lib/auth";
 
-// ==================== REGISTER STUDENT ====================
-const registerStudent = catchAsync(
+// ==================== UNIFIED REGISTER ====================
+const register = catchAsync(
     async (req: Request, res: Response) => {
         const payload = req.body;
 
-        const result = await AuthService.registerStudent(payload);
+        const result = await AuthService.register(payload);
 
         const { accessToken, refreshToken, token, ...rest } = result;
 
@@ -25,34 +25,7 @@ const registerStudent = catchAsync(
         sendResponse(res, {
             httpStatusCode: status.CREATED,
             success: true,
-            message: "Student registered successfully",
-            data: {
-                token,
-                accessToken,
-                refreshToken,
-                ...rest,
-            }
-        });
-    }
-);
-
-// ==================== REGISTER TEACHER ====================
-const registerTeacher = catchAsync(
-    async (req: Request, res: Response) => {
-        const payload = req.body;
-
-        const result = await AuthService.registerTeacher(payload);
-
-        const { accessToken, refreshToken, token, ...rest } = result;
-
-        tokenUtils.setAccessTokenCookie(res, accessToken);
-        tokenUtils.setRefreshTokenCookie(res, refreshToken);
-        tokenUtils.setBetterAuthSessionCookie(res, token as string);
-
-        sendResponse(res, {
-            httpStatusCode: status.CREATED,
-            success: true,
-            message: "Teacher registered successfully",
+            message: "User registered successfully",
             data: {
                 token,
                 accessToken,
@@ -184,20 +157,6 @@ const logoutUser = catchAsync(
     }
 );
 
-// ==================== VERIFY EMAIL ====================
-const verifyEmail = catchAsync(
-    async (req: Request, res: Response) => {
-        const { email, otp } = req.body;
-        await AuthService.verifyEmail(email, otp);
-
-        sendResponse(res, {
-            httpStatusCode: status.OK,
-            success: true,
-            message: "Email verified successfully",
-        });
-    }
-);
-
 // ==================== FORGET PASSWORD ====================
 const forgetPassword = catchAsync(
     async (req: Request, res: Response) => {
@@ -284,14 +243,12 @@ const handleOAuthError = catchAsync((req: Request, res: Response) => {
 
 // ==================== EXPORT ====================
 export const AuthController = {
-    registerStudent,
-    registerTeacher,
+    register,
     loginUser,
     getMe,
     getNewToken,
     changePassword,
     logoutUser,
-    verifyEmail,
     forgetPassword,
     resetPassword,
     googleLogin,

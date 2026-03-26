@@ -10,7 +10,7 @@ import { envVars } from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
 
 // ==================== STUDENT REGISTRATION ====================
-interface IRegisterStudentPayload {
+interface IStudentRegistrationPayload {
     name: string;
     email: string;
     password: string;
@@ -19,9 +19,10 @@ interface IRegisterStudentPayload {
     address?: string;
 }
 
-const registerStudent = async (payload: IRegisterStudentPayload) => {
+const register = async (payload: IStudentRegistrationPayload) => {
     const { name, email, password } = payload;
 
+    // Create user with Better Auth - auto-assign STUDENT role
     const data = await auth.api.signUpEmail({
         body: {
             name,
@@ -36,8 +37,9 @@ const registerStudent = async (payload: IRegisterStudentPayload) => {
     }
 
     try {
+        // Create Student profile
         const student = await prisma.$transaction(async (tx) => {
-            const studentTx = await tx.student.create({
+            return await tx.student.create({
                 data: {
                     userId: data.user.id,
                     name: payload.name,
@@ -47,10 +49,9 @@ const registerStudent = async (payload: IRegisterStudentPayload) => {
                     address: payload.address,
                 }
             });
-
-            return studentTx;
         });
 
+        // Generate tokens
         const accessToken = tokenUtils.getAccessToken({
             userId: data.user.id,
             role: data.user.role,
@@ -75,99 +76,7 @@ const registerStudent = async (payload: IRegisterStudentPayload) => {
             ...data,
             accessToken,
             refreshToken,
-            student
-        };
-
-    } catch (error) {
-        console.log("Transaction error : ", error);
-        await prisma.user.delete({
-            where: {
-                id: data.user.id
-            }
-        });
-        throw error;
-    }
-};
-
-// ==================== TEACHER REGISTRATION ====================
-interface IRegisterTeacherPayload {
-    name: string;
-    email: string;
-    password: string;
-    profilePhoto?: string;
-    contactNumber?: string;
-    address?: string;
-    registrationNumber: string;
-    experience?: number;
-    gender: "MALE" | "FEMALE" | "OTHER";
-    qualification: string;
-    currentWorkingPlace?: string;
-    designation: string;
-}
-
-const registerTeacher = async (payload: IRegisterTeacherPayload) => {
-    const { name, email, password } = payload;
-
-    const data = await auth.api.signUpEmail({
-        body: {
-            name,
-            email,
-            password,
-            role: Role.TEACHER,
-        }
-    });
-
-    if (!data.user) {
-        throw new AppError(status.BAD_REQUEST, "Failed to register teacher");
-    }
-
-    try {
-        const teacher = await prisma.$transaction(async (tx) => {
-            const teacherTx = await tx.teacher.create({
-                data: {
-                    userId: data.user.id,
-                    name: payload.name,
-                    email: payload.email,
-                    profilePhoto: payload.profilePhoto,
-                    contactNumber: payload.contactNumber,
-                    address: payload.address,
-                    registrationNumber: payload.registrationNumber,
-                    experience: payload.experience || 0,
-                    gender: payload.gender,
-                    qualification: payload.qualification,
-                    currentWorkingPlace: payload.currentWorkingPlace,
-                    designation: payload.designation,
-                }
-            });
-
-            return teacherTx;
-        });
-
-        const accessToken = tokenUtils.getAccessToken({
-            userId: data.user.id,
-            role: data.user.role,
-            name: data.user.name,
-            email: data.user.email,
-            status: data.user.status,
-            isDeleted: data.user.isDeleted,
-            emailVerified: data.user.emailVerified,
-        });
-
-        const refreshToken = tokenUtils.getRefreshToken({
-            userId: data.user.id,
-            role: data.user.role,
-            name: data.user.name,
-            email: data.user.email,
-            status: data.user.status,
-            isDeleted: data.user.isDeleted,
-            emailVerified: data.user.emailVerified,
-        });
-
-        return {
-            ...data,
-            accessToken,
-            refreshToken,
-            teacher
+            student,
         };
 
     } catch (error) {
@@ -190,7 +99,7 @@ interface ILoginUserPayload {
 const loginUser = async (payload: ILoginUserPayload) => {
     const { email, password } = payload;
 
-    // First, check if user exists and email is verified
+    // Check if user exists
     const user = await prisma.user.findUnique({
         where: { email }
     });
@@ -199,19 +108,7 @@ const loginUser = async (payload: ILoginUserPayload) => {
         throw new AppError(status.NOT_FOUND, "Invalid email address");
     }
 
-    // Check if email is verified
-    if (user && !user.emailVerified) {
-        console.log("📧 Email not verified - sending OTP for:", email);
-        
-        // Send OTP using Better Auth's API
-        await auth.api.sendVerificationOTP({
-            body: {
-                email,
-                type: "email-verification"
-            }
-        });
-    }
-
+    // Sign in with Better Auth
     const data = await auth.api.signInEmail({
         body: {
             email,
@@ -424,27 +321,6 @@ const logoutUser = async (sessionToken: string) => {
     return result;
 };
 
-// ==================== VERIFY EMAIL ====================
-const verifyEmail = async (email: string, otp: string) => {
-    const result = await auth.api.verifyEmailOTP({
-        body: {
-            email,
-            otp,
-        }
-    });
-
-    if (result.status && !result.user.emailVerified) {
-        await prisma.user.update({
-            where: {
-                email,
-            },
-            data: {
-                emailVerified: true,
-            }
-        });
-    }
-};
-
 // ==================== FORGET PASSWORD ====================
 const forgetPassword = async (email: string) => {
     const isUserExist = await prisma.user.findUnique({
@@ -567,14 +443,12 @@ const googleLoginSuccess = async (session: Record<string, any>) => {
 
 // ==================== EXPORT ====================
 export const AuthService = {
-    registerStudent,
-    registerTeacher,
+    register,
     loginUser,
     getMe,
     getNewToken,
     changePassword,
     logoutUser,
-    verifyEmail,
     forgetPassword,
     resetPassword,
     googleLoginSuccess,
