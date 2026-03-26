@@ -1,33 +1,47 @@
 import { Router } from "express";
-import { TeacherController } from "./teacher.controller";
 import { validateRequest } from "../../middleware/validateRequest";
-import { createTeacherValidationSchema, updateTeacherValidationSchema } from "./teacher.validation";
-import { checkAuth } from "../../middleware/checkAuth";
+import { TeacherController } from "./teacher.controller";
+import { createTeacherZodSchema, updateTeacherZodSchema } from "./teacher.validation";
+// import { Role } from "../../../generated/prisma/enums";
+// import { checkAuth } from "../../middleware/checkAuth";
 
 const router = Router();
 
-// Get all teachers
-router.get("/", TeacherController.getAllTeachers);
-
-// Get teacher by ID
-router.get("/:id", TeacherController.getTeacherById);
-
-// Create new teacher
+// Create Teacher (Admin only)
 router.post(
-  "/",
-  checkAuth,
-  validateRequest(createTeacherValidationSchema),
-  TeacherController.createTeacher
+   "/create-teacher",
+    // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    validateRequest(createTeacherZodSchema),
+    TeacherController.createTeacher
 );
 
-// Update teacher
-router.put(
-  "/:id",
-  validateRequest(updateTeacherValidationSchema),
-  TeacherController.updateTeacher
+// Get All Teachers (Admin only)
+router.get(
+    "/",
+    // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    TeacherController.getAllTeachers
 );
 
-// Delete teacher
-router.delete("/:id", TeacherController.deleteTeacher);
+// Get Single Teacher (Admin only)
+router.get(
+    "/:id",
+    // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    TeacherController.getSingleTeacher
+);
+
+// Update Teacher (Admin only)
+router.patch(
+    "/:id",
+    // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    validateRequest(updateTeacherZodSchema),
+    TeacherController.updateTeacher
+);
+
+// Delete Teacher (Admin only)
+router.delete(
+    "/:id",
+    // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    TeacherController.deleteTeacher
+);
 
 export const TeacherRoutes = router;

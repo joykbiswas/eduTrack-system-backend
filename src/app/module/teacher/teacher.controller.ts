@@ -1,80 +1,105 @@
+import { Request, Response } from "express";
 import status from "http-status";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { TeacherService } from "./teacher.service";
-import { ICreateTeacherPayload } from "./teacher.interface";
 
-const getAllTeachers = catchAsync(async (req, res) => {
-  const result = await TeacherService.getAllTeachers();
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Teachers retrieved successfully",
-    data: result,
-  });
-});
+// ==================== CREATE TEACHER ====================
+const createTeacher = catchAsync(
+    async (req: Request, res: Response) => {
+        const payload = req.body;
+        const result = await TeacherService.createTeacher(payload);
 
-const getTeacherById = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const result = await TeacherService.getTeacherById(id);
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Teacher retrieved successfully",
-    data: result,
-  });
-});
+        sendResponse(res, {
+            httpStatusCode: status.CREATED,
+            success: true,
+            message: "Teacher registered successfully",
+            data: result,
+        });
+    }
+);
 
-const createTeacher = catchAsync(async (req, res) => {
-  const payload: ICreateTeacherPayload = req.body;
-  const userId = req.user?.id;
+// ==================== GET ALL TEACHERS ====================
+const getAllTeachers = catchAsync(
+    async (req: Request, res: Response) => {
+        const filters = {
+            searchTerm: req.query.searchTerm as string,
+            name: req.query.name as string,
+            email: req.query.email as string,
+            gender: req.query.gender as "MALE" | "FEMALE" | "OTHER" | undefined,
+            designation: req.query.designation as string,
+            qualification: req.query.qualification as string,
+            subject: req.query.subject as string,
+        };
+        const options = {
+            page: Number(req.query.page) || 1,
+            limit: Number(req.query.limit) || 10,
+            sortBy: req.query.sortBy as string || "createdAt",
+            sortOrder: req.query.sortOrder as "asc" | "desc" || "desc",
+        };
 
-  if (!userId) {
-    return sendResponse(res, {
-      statusCode: status.UNAUTHORIZED,
-      success: false,
-      message: "User not authenticated",
-    });
-  }
+        const result = await TeacherService.getAllTeachers(filters, options);
 
-  const result = await TeacherService.createTeacher(userId, payload);
-  sendResponse(res, {
-    statusCode: status.CREATED,
-    success: true,
-    message: "Teacher created successfully",
-    data: result,
-  });
-});
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Teachers retrieved successfully",
+            data: result,
+        });
+    }
+);
 
-const updateTeacher = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const payload = req.body;
+// ==================== GET SINGLE TEACHER ====================
+const getSingleTeacher = catchAsync(
+    async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const result = await TeacherService.getSingleTeacher(id as string);
 
-  const result = await TeacherService.updateTeacher(id, payload);
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Teacher updated successfully",
-    data: result,
-  });
-});
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Teacher retrieved successfully",
+            data: result,
+        });
+    }
+);
 
-const deleteTeacher = catchAsync(async (req, res) => {
-  const { id } = req.params;
+// ==================== UPDATE TEACHER ====================
+const updateTeacher = catchAsync(
+    async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const payload = req.body;
+        const result = await TeacherService.updateTeacher(id as string, payload);
 
-  const result = await TeacherService.deleteTeacher(id);
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Teacher deleted successfully",
-    data: result,
-  });
-});
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Teacher updated successfully",
+            data: result,
+        });
+    }
+);
 
+// ==================== DELETE TEACHER ====================
+const deleteTeacher = catchAsync(
+    async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const result = await TeacherService.deleteTeacher(id as string);
+
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Teacher deleted successfully",
+            data: result,
+        });
+    }
+);
+
+// ==================== EXPORT ====================
 export const TeacherController = {
-  getAllTeachers,
-  getTeacherById,
-  createTeacher,
-  updateTeacher,
-  deleteTeacher,
+    createTeacher,
+    getAllTeachers,
+    getSingleTeacher,
+    updateTeacher,
+    deleteTeacher,
 };

@@ -1,12 +1,12 @@
 # EduTrack System - API Endpoints Reference
 
-**Base URL**: `http://localhost:3000/api`
+**Base URL**: `http://localhost:3000/api/v1`
 
 ---
 
 ## 🔐 AUTHENTICATION & USERS
 
-### Auth Endpoints
+### Auth Endpoints Done
 ```
 POST   /auth/signup
 POST   /auth/login
