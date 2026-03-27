@@ -6,7 +6,7 @@ import { OrganizationService } from "./organization.service";
 const getAllOrganizations = catchAsync(async (req, res) => {
   const result = await OrganizationService.getAllOrganizations();
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Organizations retrieved successfully",
     data: result,
@@ -14,9 +14,9 @@ const getAllOrganizations = catchAsync(async (req, res) => {
 });
 
 const getOrganizationById = catchAsync(async (req, res) => {
-  const result = await OrganizationService.getOrganizationById(req.params.id);
+  const result = await OrganizationService.getOrganizationById(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Organization retrieved successfully",
     data: result,
@@ -26,7 +26,7 @@ const getOrganizationById = catchAsync(async (req, res) => {
 const createOrganization = catchAsync(async (req, res) => {
   const result = await OrganizationService.createOrganization(req.body);
   sendResponse(res, {
-    statusCode: status.CREATED,
+    httpStatusCode: status.CREATED,
     success: true,
     message: "Organization created successfully",
     data: result,
@@ -34,9 +34,9 @@ const createOrganization = catchAsync(async (req, res) => {
 });
 
 const updateOrganization = catchAsync(async (req, res) => {
-  const result = await OrganizationService.updateOrganization(req.params.id, req.body);
+  const result = await OrganizationService.updateOrganization(req.params.id as string, req.body);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Organization updated successfully",
     data: result,
@@ -44,9 +44,9 @@ const updateOrganization = catchAsync(async (req, res) => {
 });
 
 const deleteOrganization = catchAsync(async (req, res) => {
-  const result = await OrganizationService.deleteOrganization(req.params.id);
+  const result = await OrganizationService.deleteOrganization(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Organization deleted successfully",
     data: result,
