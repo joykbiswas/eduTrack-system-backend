@@ -6,6 +6,7 @@ import { createClassValidationSchema, updateClassValidationSchema } from "./clas
 const router = Router();
 
 router.get("/", ClassController.getAllClasses);
+
 router.get("/:id", ClassController.getClassById);
 router.post("/", validateRequest(createClassValidationSchema), ClassController.createClass);
 router.put("/:id", validateRequest(updateClassValidationSchema), ClassController.updateClass);

@@ -140,7 +140,7 @@ const getAllTeachers = async (filters: ITeacherFilters, options: IPaginationOpti
                     updatedAt: true,
                 }
             },
-            assignedClasses: true,
+            assignedClasses: { where: { isDeleted: false } },
         }
     });
 
@@ -175,6 +175,7 @@ const getSingleTeacher = async (id: string) => {
                 }
             },
             assignedClasses: {
+                where: { isDeleted: false },
                 include: {
                     organization: true,
                 }

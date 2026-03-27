@@ -6,14 +6,24 @@ import { ICreateOrganizationPayload, IUpdateOrganizationPayload } from "./organi
 const getAllOrganizations = async () => {
   return await prisma.organization.findMany({
     where: { isDeleted: false },
-    include: { parent: true, children: true, classes: true, lookups: true },
+    include: {
+      parent: true,
+      children: { where: { isDeleted: false } },
+      classes: { where: { isDeleted: false } },
+      lookups: { where: { isDeleted: false } },
+    },
   });
 };
 
 const getOrganizationById = async (id: string) => {
   const org = await prisma.organization.findUnique({
     where: { id, isDeleted: false },
-    include: { parent: true, children: true, classes: true, lookups: true },
+    include: {
+      parent: true,
+      children: { where: { isDeleted: false } },
+      classes: { where: { isDeleted: false } },
+      lookups: { where: { isDeleted: false } },
+    },
   });
   if (!org) throw new AppError(status.NOT_FOUND, "Organization not found");
   return org;
