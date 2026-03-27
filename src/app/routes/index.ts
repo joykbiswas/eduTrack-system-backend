@@ -10,6 +10,11 @@ import { LookupRoutes } from "../module/lookup/lookup.route";
 import { WordStoryCardRoutes } from "../module/word-story-card/word-story-card.route";
 import { MessageRoutes } from "../module/message/message.route";
 import { TaskRoutes } from "../module/task/task.route";
+import { QuizRoutes } from "../module/quiz/quiz.route";
+import { CardContentRoutes } from "../module/card-content/card-content.route";
+import { MaterialRoutes } from "../module/material/material.route";
+import { AssessmentRoutes } from "../module/assessment/assessment.route";
+
 
 const router = Router();
 
@@ -24,5 +29,10 @@ router.use("/lookups", LookupRoutes);
 router.use("/word-story-cards", WordStoryCardRoutes);
 router.use("/messages", MessageRoutes);
 router.use("/tasks", TaskRoutes);
+router.use("/quizzes", QuizRoutes);
+router.use("/card-contents", CardContentRoutes);
+router.use("/materials", MaterialRoutes);
+router.use("/assessments", AssessmentRoutes);
+
 
 export const IndexRoutes = router;

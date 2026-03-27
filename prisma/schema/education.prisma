@@ -15,9 +15,10 @@ model WordStoryCard {
   status           CardStatus @default(DRAFT)
   
   // Related Content
-  cardContents     CardContent[]
-  quizzes          Quiz[]
-  materials        Material[]
+  quizzes          Quiz[]     @relation("WordStoryCardQuizzes")
+  materials        Material[] @relation("WordStoryCardMaterials")
+  assessments      Assessment[] @relation("WordStoryCardAssessments")
+  cardContents     CardContent[] @relation("WordStoryCardContent")
 
   // Status & Timestamps
   isDeleted        Boolean  @default(false)
@@ -30,12 +31,13 @@ model WordStoryCard {
   @@map("word_story_cards")
 }
 
+
 // ============ CARD CONTENT (Positioning) ============
 model CardContent {
   id        String   @id @default(uuid(7))
   
   cardId    String
-  card      WordStoryCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  card      WordStoryCard @relation(fields: [cardId], references: [id], onDelete: Cascade, "WordStoryCardContent")
   
   imageUrl  String?
   soundUrl  String?
@@ -51,13 +53,12 @@ model CardContent {
   @@index([cardId], name: "idx_cardcontent_cardId")
   @@map("card_contents")
 }
-
 // ============ QUIZ ============
 model Quiz {
   id               String   @id @default(uuid(7))
   
   cardId           String
-  card             WordStoryCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  card             WordStoryCard @relation(fields: [cardId], references: [id], onDelete: Cascade, "WordStoryCardQuizzes")
   
   type             QuizType
   question         String
@@ -83,7 +84,7 @@ model Material {
   type      String?
   
   cardId    String?
-  card      WordStoryCard? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  card      WordStoryCard? @relation(fields: [cardId], references: [id], onDelete: SetNull, "WordStoryCardMaterials")
   
   // Status & Timestamps
   isDeleted Boolean  @default(false)
@@ -103,7 +104,8 @@ model Assessment {
   description  String?
   
   cardId       String?
-  questions    Json
+  card         WordStoryCard? @relation(fields: [cardId], references: [id], onDelete: SetNull, "WordStoryCardAssessments")
+  questions    Json // e.g. [{question: string, answer: boolean}] for true/false
   passingScore Int      @default(60)
   
   // Status & Timestamps

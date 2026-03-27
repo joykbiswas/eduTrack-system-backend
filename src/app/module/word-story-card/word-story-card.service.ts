@@ -6,14 +6,14 @@ import { prisma } from "../../lib/prisma";
 const getAllCards = async () => {
   return await prisma.wordStoryCard.findMany({
     where: { isDeleted: false },
-    include: { cardContents: true, quizzes: true, materials: true },
+    include: { cardContents: true, quizzes: true, materials: true, assessments: true },
   });
 };
 
 const getCardById = async (id: string) => {
   const card = await prisma.wordStoryCard.findUnique({
     where: { id, isDeleted: false },
-    include: { cardContents: true, quizzes: true, materials: true },
+    include: { cardContents: true, quizzes: true, materials: true,  assessments: true },
   });
   if (!card) throw new AppError(status.NOT_FOUND, "Card not found");
   return card;
@@ -33,7 +33,7 @@ const updateCard = async (id: string, payload: any) => {
   return await prisma.wordStoryCard.update({
     where: { id },
     data: payload,
-    include: { cardContents: true, quizzes: true, materials: true },
+    include: { cardContents: true, quizzes: true, materials: true,  assessments: true },
   });
 };
 
@@ -54,7 +54,7 @@ const publishCard = async (id: string) => {
   return await prisma.wordStoryCard.update({
     where: { id },
     data: { status: "PUBLISHED" },
-    include: { cardContents: true, quizzes: true, materials: true },
+    include: { cardContents: true, quizzes: true, materials: true,  assessments: true },
   });
 };
 
