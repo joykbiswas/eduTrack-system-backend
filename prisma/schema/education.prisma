@@ -6,6 +6,7 @@
 model WordStoryCard {
   id               String   @id @default(uuid(7))
   title            String
+  image            String?
   keywords         String?
   description      String?
   descriptionSound String?

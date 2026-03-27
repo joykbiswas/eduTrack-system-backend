@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface IWordStoryCardPayload {
   title: string;
+  image?: string;
   keywords?: string;
   description?: string;
   descriptionSound?: string;
