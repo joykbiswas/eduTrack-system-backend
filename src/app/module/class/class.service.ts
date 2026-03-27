@@ -54,6 +54,23 @@ const deleteClass = async (id: string) => {
   const cls = await prisma.class.findUnique({ where: { id } });
   if (!cls) throw new AppError(status.NOT_FOUND, "Class not found");
 
+  // Cascade soft-delete related Tasks
+  await prisma.task.updateMany({
+    where: { classId: id, isDeleted: false },
+    data: { isDeleted: true, deletedAt: new Date() },
+  });
+
+  // Cascade soft-delete related Messages
+  await prisma.message.updateMany({
+    where: { classId: id, isDeleted: false },
+    data: { isDeleted: true, deletedAt: new Date() },
+  });
+
+  // Hard-delete StudentClass junction records (no soft-delete support)
+  await prisma.studentClass.deleteMany({
+    where: { classId: id },
+  });
+
   return await prisma.class.update({
     where: { id },
     data: { isDeleted: true, deletedAt: new Date() },

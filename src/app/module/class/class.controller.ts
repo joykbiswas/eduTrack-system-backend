@@ -6,7 +6,7 @@ import { ClassService } from "./class.service";
 const getAllClasses = catchAsync(async (req, res) => {
   const result = await ClassService.getAllClasses();
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Classes retrieved successfully",
     data: result,
@@ -14,9 +14,9 @@ const getAllClasses = catchAsync(async (req, res) => {
 });
 
 const getClassById = catchAsync(async (req, res) => {
-  const result = await ClassService.getClassById(req.params.id);
+  const result = await ClassService.getClassById(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Class retrieved successfully",
     data: result,
@@ -26,7 +26,7 @@ const getClassById = catchAsync(async (req, res) => {
 const createClass = catchAsync(async (req, res) => {
   const result = await ClassService.createClass(req.body);
   sendResponse(res, {
-    statusCode: status.CREATED,
+    httpStatusCode: status.CREATED,
     success: true,
     message: "Class created successfully",
     data: result,
@@ -34,9 +34,9 @@ const createClass = catchAsync(async (req, res) => {
 });
 
 const updateClass = catchAsync(async (req, res) => {
-  const result = await ClassService.updateClass(req.params.id, req.body);
+  const result = await ClassService.updateClass(req.params.id as string, req.body);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Class updated successfully",
     data: result,
@@ -44,9 +44,9 @@ const updateClass = catchAsync(async (req, res) => {
 });
 
 const deleteClass = catchAsync(async (req, res) => {
-  const result = await ClassService.deleteClass(req.params.id);
+  const result = await ClassService.deleteClass(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Class deleted successfully",
     data: result,
