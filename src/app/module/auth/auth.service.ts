@@ -321,78 +321,78 @@ const logoutUser = async (sessionToken: string) => {
     return result;
 };
 
-// ==================== FORGET PASSWORD ====================
-const forgetPassword = async (email: string) => {
-    const isUserExist = await prisma.user.findUnique({
-        where: {
-            email,
-        }
-    });
+// // ==================== FORGET PASSWORD ====================
+// const forgetPassword = async (email: string) => {
+//     const isUserExist = await prisma.user.findUnique({
+//         where: {
+//             email,
+//         }
+//     });
 
-    if (!isUserExist) {
-        throw new AppError(status.NOT_FOUND, "User not found");
-    }
+//     if (!isUserExist) {
+//         throw new AppError(status.NOT_FOUND, "User not found");
+//     }
 
-    if (!isUserExist.emailVerified) {
-        throw new AppError(status.BAD_REQUEST, "Email not verified");
-    }
+//     if (!isUserExist.emailVerified) {
+//         throw new AppError(status.BAD_REQUEST, "Email not verified");
+//     }
 
-    if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
-        throw new AppError(status.NOT_FOUND, "User not found");
-    }
+//     if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
+//         throw new AppError(status.NOT_FOUND, "User not found");
+//     }
 
-    await auth.api.requestPasswordResetEmailOTP({
-        body: {
-            email,
-        }
-    });
-};
+//     await auth.api.requestPasswordResetEmailOTP({
+//         body: {
+//             email,
+//         }
+//     });
+// };
 
-// ==================== RESET PASSWORD ====================
-const resetPassword = async (email: string, otp: string, newPassword: string) => {
-    const isUserExist = await prisma.user.findUnique({
-        where: {
-            email,
-        }
-    });
+// // ==================== RESET PASSWORD ====================
+// const resetPassword = async (email: string, otp: string, newPassword: string) => {
+//     const isUserExist = await prisma.user.findUnique({
+//         where: {
+//             email,
+//         }
+//     });
 
-    if (!isUserExist) {
-        throw new AppError(status.NOT_FOUND, "User not found");
-    }
+//     if (!isUserExist) {
+//         throw new AppError(status.NOT_FOUND, "User not found");
+//     }
 
-    if (!isUserExist.emailVerified) {
-        throw new AppError(status.BAD_REQUEST, "Email not verified");
-    }
+//     if (!isUserExist.emailVerified) {
+//         throw new AppError(status.BAD_REQUEST, "Email not verified");
+//     }
 
-    if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
-        throw new AppError(status.NOT_FOUND, "User not found");
-    }
+//     if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
+//         throw new AppError(status.NOT_FOUND, "User not found");
+//     }
 
-    await auth.api.resetPasswordEmailOTP({
-        body: {
-            email,
-            otp,
-            password: newPassword,
-        }
-    });
+//     await auth.api.resetPasswordEmailOTP({
+//         body: {
+//             email,
+//             otp,
+//             password: newPassword,
+//         }
+//     });
 
-    if (isUserExist.needPasswordChange) {
-        await prisma.user.update({
-            where: {
-                id: isUserExist.id,
-            },
-            data: {
-                needPasswordChange: false,
-            }
-        });
-    }
+//     if (isUserExist.needPasswordChange) {
+//         await prisma.user.update({
+//             where: {
+//                 id: isUserExist.id,
+//             },
+//             data: {
+//                 needPasswordChange: false,
+//             }
+//         });
+//     }
 
-    await prisma.session.deleteMany({
-        where: {
-            userId: isUserExist.id,
-        }
-    });
-};
+//     await prisma.session.deleteMany({
+//         where: {
+//             userId: isUserExist.id,
+//         }
+//     });
+// };
 
 // ==================== GOOGLE LOGIN SUCCESS ====================
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -449,7 +449,6 @@ export const AuthService = {
     getNewToken,
     changePassword,
     logoutUser,
-    forgetPassword,
-    resetPassword,
+
     googleLoginSuccess,
 };

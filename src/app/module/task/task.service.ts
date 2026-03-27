@@ -38,20 +38,27 @@ const updateTask = async (id: string, payload: any) => {
   });
 };
 
-const assignCardToStudent = async (cardId: string, payload: IAssignTaskPayload) => {
-  return await prisma.$transaction(async (tx) => {
-    // Check card exists
-    const card = await tx.wordStoryCard.findUnique({
-      where: { id: cardId, isDeleted: false },
-    });
-    if (!card) {
-      throw new AppError(status.NOT_FOUND, 'WordStoryCard not found');
-    }
 
-    // Find or create Task for this card
+const assignCardToStudent = async (cardId: string, payload: IAssignTaskPayload) => {
+  
+  const card = await prisma.wordStoryCard.findUnique({
+    where: { id: cardId, isDeleted: false },
+  });
+  if (!card) throw new AppError(status.NOT_FOUND, 'WordStoryCard not found');
+
+  const student = await prisma.student.findUnique({
+    where: { id: payload.studentId, isDeleted: false },
+  });
+  if (!student) throw new AppError(status.NOT_FOUND, 'Student not found');
+
+  // ২. এখন ট্রানজ্যাকশন শুরু করুন শুধুমাত্র রাইট অপারেশনের জন্য
+  return await prisma.$transaction(async (tx) => {
+    
+    // Task খুঁজে বের করা বা তৈরি করা
     let task = await tx.task.findFirst({
       where: { cardId: cardId, isDeleted: false },
     });
+
     if (!task) {
       task = await tx.task.create({
         data: {
@@ -63,42 +70,27 @@ const assignCardToStudent = async (cardId: string, payload: IAssignTaskPayload) 
       });
     }
 
-    // Check student exists
-    const student = await tx.student.findUnique({
-      where: { id: payload.studentId, isDeleted: false },
-    });
-    if (!student) {
-      throw new AppError(status.NOT_FOUND, 'Student not found');
-    }
-
-    // Check if already assigned
+    // অ্যাসাইনমেন্ট চেক এবং তৈরি (upsert ব্যবহার করলে আরও ভালো হয়)
     const existingAssignment = await tx.studentTask.findFirst({
-      where: {
-        studentId: payload.studentId,
-        taskId: task.id,
-      },
+      where: { studentId: payload.studentId, taskId: task.id },
     });
+
     if (existingAssignment) {
-      throw new AppError(status.BAD_REQUEST, 'Card task is already assigned to this student');
+      throw new AppError(status.BAD_REQUEST, 'Already assigned');
     }
 
-    // Create assignment
     await tx.studentTask.create({
-      data: {
-        studentId: payload.studentId,
-        taskId: task.id,
-      },
+      data: { studentId: payload.studentId, taskId: task.id },
     });
 
-    // Return updated task
     return await tx.task.findUnique({
       where: { id: task.id },
       include: { class: true, assignedTo: { include: { student: true } } },
     });
+  }, {
+    timeout: 15000 // সেফটির জন্য ১৫ সেকেন্ড সেট করুন
   });
 };
-
-
 
 const deleteTask = async (id: string) => {
   const task = await prisma.task.findUnique({ where: { id } });

@@ -158,32 +158,32 @@ const logoutUser = catchAsync(
 );
 
 // ==================== FORGET PASSWORD ====================
-const forgetPassword = catchAsync(
-    async (req: Request, res: Response) => {
-        const { email } = req.body;
-        await AuthService.forgetPassword(email);
+// const forgetPassword = catchAsync(
+//     async (req: Request, res: Response) => {
+//         const { email } = req.body;
+//         await AuthService.forgetPassword(email);
 
-        sendResponse(res, {
-            httpStatusCode: status.OK,
-            success: true,
-            message: "Password reset OTP sent to email successfully",
-        });
-    }
-);
+//         sendResponse(res, {
+//             httpStatusCode: status.OK,
+//             success: true,
+//             message: "Password reset OTP sent to email successfully",
+//         });
+//     }
+// );
 
-// ==================== RESET PASSWORD ====================
-const resetPassword = catchAsync(
-    async (req: Request, res: Response) => {
-        const { email, otp, newPassword } = req.body;
-        await AuthService.resetPassword(email, otp, newPassword);
+// // ==================== RESET PASSWORD ====================
+// const resetPassword = catchAsync(
+//     async (req: Request, res: Response) => {
+//         const { email, otp, newPassword } = req.body;
+//         await AuthService.resetPassword(email, otp, newPassword);
 
-        sendResponse(res, {
-            httpStatusCode: status.OK,
-            success: true,
-            message: "Password reset successfully",
-        });
-    }
-);
+//         sendResponse(res, {
+//             httpStatusCode: status.OK,
+//             success: true,
+//             message: "Password reset successfully",
+//         });
+//     }
+// );
 
 // ==================== GOOGLE LOGIN ====================
 // /api/v1/auth/login/google?redirect=/profile
@@ -249,8 +249,7 @@ export const AuthController = {
     getNewToken,
     changePassword,
     logoutUser,
-    forgetPassword,
-    resetPassword,
+    
     googleLogin,
     googleLoginSuccess,
     handleOAuthError,
