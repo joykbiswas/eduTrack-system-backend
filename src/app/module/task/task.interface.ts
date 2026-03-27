@@ -6,3 +6,8 @@ export interface ITaskPayload {
   status?: string;
   classId?: string;
 }
+
+export interface IAssignTaskPayload {
+  studentId: string;
+}
+

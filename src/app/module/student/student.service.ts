@@ -12,13 +12,24 @@ const getAllStudents = async () => {
     include: {
       user: true,
       enrolledClasses: {
+        where: {
+          class: {
+            isDeleted: false,
+          },
+        },
         include: {
           class: true,
         },
       },
       assignedTasks: {
+        where: {
+          task: {
+            isDeleted: false,
+          },
+        },
         include: {
           task: true,
+          
         },
       },
       progress: true,
@@ -37,20 +48,39 @@ const getStudentById = async (id: string) => {
     include: {
       user: true,
       enrolledClasses: {
+        where: {
+          class: {
+            isDeleted: false,
+          },
+        },
         include: {
           class: {
             include: {
               organization: true,
               teacher: true,
-              tasks: true,
-              messages: true,
+              tasks: {
+                where: {
+                  isDeleted: false,
+                },
+              },
+              messages: {
+                where: {
+                  isDeleted: false,
+                },
+              },
             },
           },
         },
       },
       assignedTasks: {
+        where: {
+          task: {
+            isDeleted: false,
+          },
+        },
         include: {
           task: true,
+          
         },
       },
       progress: {

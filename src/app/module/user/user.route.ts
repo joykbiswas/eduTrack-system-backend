@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { UserController } from "./user.controller";
-import { createTeacherZodSchema, updateTeacherZodSchema } from "./user.validation";
+import {  updateTeacherZodSchema } from "./user.validation";
 import { validateRequest } from "../../middleware/validateRequest";
 // import { Role } from "../../../generated/prisma/enums";
 // import { checkAuth } from "../../middleware/checkAuth";

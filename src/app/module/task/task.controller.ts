@@ -6,7 +6,7 @@ import { TaskService } from "./task.service";
 const getAllTasks = catchAsync(async (req, res) => {
   const result = await TaskService.getAllTasks();
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Tasks retrieved successfully",
     data: result,
@@ -14,9 +14,9 @@ const getAllTasks = catchAsync(async (req, res) => {
 });
 
 const getTaskById = catchAsync(async (req, res) => {
-  const result = await TaskService.getTaskById(req.params.id);
+  const result = await TaskService.getTaskById(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Task retrieved successfully",
     data: result,
@@ -26,7 +26,7 @@ const getTaskById = catchAsync(async (req, res) => {
 const createTask = catchAsync(async (req, res) => {
   const result = await TaskService.createTask(req.body);
   sendResponse(res, {
-    statusCode: status.CREATED,
+    httpStatusCode: status.CREATED,
     success: true,
     message: "Task created successfully",
     data: result,
@@ -34,19 +34,38 @@ const createTask = catchAsync(async (req, res) => {
 });
 
 const updateTask = catchAsync(async (req, res) => {
-  const result = await TaskService.updateTask(req.params.id, req.body);
+  const result = await TaskService.updateTask(req.params.id as string, req.body);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Task updated successfully",
     data: result,
   });
 });
 
-const deleteTask = catchAsync(async (req, res) => {
-  const result = await TaskService.deleteTask(req.params.id);
+const assignCardToStudent = catchAsync(async (req, res) => {
+  // DEBUG LOGGING
+  console.log('=== ASSIGN ENDPOINT DEBUG ===');
+  console.log('req.body:', req.body);
+  console.log('req.body type:', typeof req.body);
+  console.log('req.headers["content-type"]:', req.headers['content-type']);
+  console.log('req.params.cardId:', req.params.cardId);
+  console.log('===========================');
+  
+  const result = await TaskService.assignCardToStudent(req.params.cardId as string, req.body);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Card assigned to student successfully",
+    data: result,
+  });
+});
+
+
+const deleteTask = catchAsync(async (req, res) => {
+  const result = await TaskService.deleteTask(req.params.id as string);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
     success: true,
     message: "Task deleted successfully",
     data: result,
@@ -58,5 +77,8 @@ export const TaskController = {
   getTaskById,
   createTask,
   updateTask,
+  assignCardToStudent,
   deleteTask,
 };
+
+
