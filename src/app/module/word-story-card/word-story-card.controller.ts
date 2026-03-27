@@ -6,7 +6,7 @@ import { WordStoryCardService } from "./word-story-card.service";
 const getAllCards = catchAsync(async (req, res) => {
   const result = await WordStoryCardService.getAllCards();
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Cards retrieved successfully",
     data: result,
@@ -14,9 +14,9 @@ const getAllCards = catchAsync(async (req, res) => {
 });
 
 const getCardById = catchAsync(async (req, res) => {
-  const result = await WordStoryCardService.getCardById(req.params.id);
+  const result = await WordStoryCardService.getCardById(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Card retrieved successfully",
     data: result,
@@ -26,7 +26,7 @@ const getCardById = catchAsync(async (req, res) => {
 const createCard = catchAsync(async (req, res) => {
   const result = await WordStoryCardService.createCard(req.body);
   sendResponse(res, {
-    statusCode: status.CREATED,
+    httpStatusCode: status.CREATED,
     success: true,
     message: "Card created successfully",
     data: result,
@@ -34,9 +34,9 @@ const createCard = catchAsync(async (req, res) => {
 });
 
 const updateCard = catchAsync(async (req, res) => {
-  const result = await WordStoryCardService.updateCard(req.params.id, req.body);
+  const result = await WordStoryCardService.updateCard(req.params.id as string, req.body);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Card updated successfully",
     data: result,
@@ -44,9 +44,9 @@ const updateCard = catchAsync(async (req, res) => {
 });
 
 const deleteCard = catchAsync(async (req, res) => {
-  const result = await WordStoryCardService.deleteCard(req.params.id);
+  const result = await WordStoryCardService.deleteCard(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Card deleted successfully",
     data: result,
@@ -54,9 +54,9 @@ const deleteCard = catchAsync(async (req, res) => {
 });
 
 const publishCard = catchAsync(async (req, res) => {
-  const result = await WordStoryCardService.publishCard(req.params.id);
+  const result = await WordStoryCardService.publishCard(req.params.id as string);
   sendResponse(res, {
-    statusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Card published successfully",
     data: result,

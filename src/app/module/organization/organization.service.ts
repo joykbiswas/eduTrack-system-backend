@@ -15,6 +15,7 @@ const getAllOrganizations = async () => {
   });
 };
 
+
 const getOrganizationById = async (id: string) => {
   const org = await prisma.organization.findUnique({
     where: { id, isDeleted: false },
@@ -50,7 +51,11 @@ const updateOrganization = async (id: string, payload: IUpdateOrganizationPayloa
   return await prisma.organization.update({
     where: { id },
     data: payload,
-    include: { parent: true, children: true, classes: true },
+    include: {
+      parent: true,
+      children: { where: { isDeleted: false } },
+      classes: { where: { isDeleted: false } },
+    },
   });
 };
 
