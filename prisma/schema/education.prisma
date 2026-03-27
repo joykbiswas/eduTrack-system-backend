@@ -19,6 +19,7 @@ model WordStoryCard {
   materials        Material[] @relation("WordStoryCardMaterials")
   assessments      Assessment[] @relation("WordStoryCardAssessments")
   cardContents     CardContent[] @relation("WordStoryCardContent")
+  tasks            Task[]     @relation("TaskToWordStoryCard")
 
   // Status & Timestamps
   isDeleted        Boolean  @default(false)
@@ -30,7 +31,6 @@ model WordStoryCard {
   @@index([isDeleted], name: "idx_wordstorycard_isDeleted")
   @@map("word_story_cards")
 }
-
 
 // ============ CARD CONTENT (Positioning) ============
 model CardContent {

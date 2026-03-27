@@ -14,7 +14,7 @@ const getAllTasks = async () => {
 const getTaskById = async (id: string) => {
   const task = await prisma.task.findUnique({
     where: { id, isDeleted: false },
-    include: { class: true, assignedTo: { include: { student: true } } },
+    include: { class: true, card: true, assignedTo: { include: { student: true } } },
   });
   if (!task) throw new AppError(status.NOT_FOUND, "Task not found");
   return task;

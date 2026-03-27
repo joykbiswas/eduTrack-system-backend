@@ -8,6 +8,7 @@ model Task {
   title       String
   description String?
   cardId      String?
+  card        WordStoryCard? @relation(fields: [cardId], references: [id], onDelete: SetNull, "TaskToWordStoryCard")
   
   // Assignment Details
   dueDate     DateTime?
