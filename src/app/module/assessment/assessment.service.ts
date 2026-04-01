@@ -6,6 +6,11 @@ import { ICreateAssessmentPayload, IUpdateAssessmentPayload } from "./assessment
 const getAllAssessments = async () => {
   return await prisma.assessment.findMany({
     where: { isDeleted: false },
+    include: {
+      card: {
+        select: { id: true, title: true }
+      }
+    },
   });
 };
 
