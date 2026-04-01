@@ -46,20 +46,6 @@ router.post(
     AuthController.logoutUser
 );
 
-// Password Reset
-// router.post(
-//     "/forget-password",
-//     validateRequest(AuthValidation.forgetPassword),
-//     AuthController.forgetPassword
-// );
-
-// router.post(
-//     "/reset-password",
-//     validateRequest(AuthValidation.resetPassword),
-//     AuthController.resetPassword
-// );
-
-// Google OAuth Routes
 router.get("/login/google", AuthController.googleLogin);
 router.get("/google/success", AuthController.googleLoginSuccess);
 router.get("/oauth/error", AuthController.handleOAuthError);

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AuthRoutes } from "../module/auth/auth.route";
-import { UserRoutes } from "../module/user/user.route";
+// import { UserRoutes } from "../module/user/user.route";
 import { AdminRoutes } from "../module/admin/admin.route";
 import { TeacherRoutes } from "../module/teacher/teacher.route";
 import { StudentRoutes } from "../module/student/student.route";
@@ -19,7 +19,7 @@ import { AssessmentRoutes } from "../module/assessment/assessment.route";
 const router = Router();
 
 router.use("/auth", AuthRoutes);
-router.use("/users", UserRoutes);
+// router.use("/users", UserRoutes);
 router.use("/admin", AdminRoutes);
 router.use("/teacher", TeacherRoutes);
 router.use("/student", StudentRoutes);

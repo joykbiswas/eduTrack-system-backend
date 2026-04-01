@@ -58,11 +58,20 @@ const publishCard = async (id: string) => {
   });
 };
 
+const getPublishedCards = async () => {
+  return await prisma.wordStoryCard.findMany({
+    where: { isDeleted: false, status: "PUBLISHED" },
+    include: { cardContents: true, quizzes: true, materials: true, assessments: true },
+  });
+};
+
 export const WordStoryCardService = {
   getAllCards,
+  getPublishedCards,
   getCardById,
   createCard,
   updateCard,
   deleteCard,
   publishCard,
 };
+

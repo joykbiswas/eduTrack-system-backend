@@ -161,7 +161,16 @@ const getMe = async (user: IRequestUser) => {
             student: {
                 include: {
                     enrolledClasses: true,
-                    assignedTasks: true,
+                    assignedTasks: {
+                        where: {
+                            task: {
+                                isDeleted: false,
+                            },
+                        },
+                        include: {
+                            task: true,
+                        },
+                    },
                     progress: true,
                 }
             },
@@ -183,7 +192,7 @@ const getMe = async (user: IRequestUser) => {
 
 // ==================== REFRESH TOKEN ====================
 const getNewToken = async (refreshToken: string, sessionToken: string) => {
-    const isSessionTokenExists = await prisma.session.findUnique({
+    const isSessionTokenExists = await prisma.session.findFirst({
         where: {
             token: sessionToken,
         },
@@ -224,12 +233,11 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
         emailVerified: data.emailVerified,
     });
 
-    const { token } = await prisma.session.update({
+    const updatedSession = await prisma.session.update({
         where: {
-            token: sessionToken
+            id: isSessionTokenExists.id,
         },
         data: {
-            token: sessionToken,
             expiresAt: new Date(Date.now() + 60 * 60 * 60 * 24 * 1000),
             updatedAt: new Date(),
         }
@@ -238,7 +246,7 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
-        sessionToken: token,
+        sessionToken: updatedSession.token,
     };
 };
 
@@ -320,79 +328,6 @@ const logoutUser = async (sessionToken: string) => {
 
     return result;
 };
-
-// // ==================== FORGET PASSWORD ====================
-// const forgetPassword = async (email: string) => {
-//     const isUserExist = await prisma.user.findUnique({
-//         where: {
-//             email,
-//         }
-//     });
-
-//     if (!isUserExist) {
-//         throw new AppError(status.NOT_FOUND, "User not found");
-//     }
-
-//     if (!isUserExist.emailVerified) {
-//         throw new AppError(status.BAD_REQUEST, "Email not verified");
-//     }
-
-//     if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
-//         throw new AppError(status.NOT_FOUND, "User not found");
-//     }
-
-//     await auth.api.requestPasswordResetEmailOTP({
-//         body: {
-//             email,
-//         }
-//     });
-// };
-
-// // ==================== RESET PASSWORD ====================
-// const resetPassword = async (email: string, otp: string, newPassword: string) => {
-//     const isUserExist = await prisma.user.findUnique({
-//         where: {
-//             email,
-//         }
-//     });
-
-//     if (!isUserExist) {
-//         throw new AppError(status.NOT_FOUND, "User not found");
-//     }
-
-//     if (!isUserExist.emailVerified) {
-//         throw new AppError(status.BAD_REQUEST, "Email not verified");
-//     }
-
-//     if (isUserExist.isDeleted || isUserExist.status === UserStatus.DELETED) {
-//         throw new AppError(status.NOT_FOUND, "User not found");
-//     }
-
-//     await auth.api.resetPasswordEmailOTP({
-//         body: {
-//             email,
-//             otp,
-//             password: newPassword,
-//         }
-//     });
-
-//     if (isUserExist.needPasswordChange) {
-//         await prisma.user.update({
-//             where: {
-//                 id: isUserExist.id,
-//             },
-//             data: {
-//                 needPasswordChange: false,
-//             }
-//         });
-//     }
-
-//     await prisma.session.deleteMany({
-//         where: {
-//             userId: isUserExist.id,
-//         }
-//     });
-// };
 
 // ==================== GOOGLE LOGIN SUCCESS ====================
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

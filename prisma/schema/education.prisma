@@ -12,7 +12,7 @@ model WordStoryCard {
   descriptionSound String?
   dialogTitle      String?
   dialogContent    Json?
-  status           CardStatus @default(DRAFT)
+  status           CardStatus @default(PUBLISHED)
   
   // Related Content
   quizzes          Quiz[]     @relation("WordStoryCardQuizzes")

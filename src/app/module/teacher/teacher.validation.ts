@@ -4,7 +4,7 @@ import { Gender } from "../../../generated/prisma/enums";
 // Teacher registration schema
 export const createTeacherZodSchema = z.object({
     password: z.string()
-        .min(6, "Password must be at least 6 characters")
+        .min(5, "Password must be at least 5 characters")
         .max(20, "Password must be at most 20 characters"),
     teacher: z.object({
         name: z.string()

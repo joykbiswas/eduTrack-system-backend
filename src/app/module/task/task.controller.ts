@@ -44,13 +44,6 @@ const updateTask = catchAsync(async (req, res) => {
 });
 
 const assignCardToStudent = catchAsync(async (req, res) => {
-  // DEBUG LOGGING
-  console.log('=== ASSIGN ENDPOINT DEBUG ===');
-  console.log('req.body:', req.body);
-  console.log('req.body type:', typeof req.body);
-  console.log('req.headers["content-type"]:', req.headers['content-type']);
-  console.log('req.params.cardId:', req.params.cardId);
-  console.log('===========================');
   
   const result = await TaskService.assignCardToStudent(req.params.cardId as string, req.body);
   sendResponse(res, {
